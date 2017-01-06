@@ -1,6 +1,6 @@
-(defproject lcmap-chromatophore "0.1.0-SNAPSHOT"
+(defproject lcmap-changes "0.1.0-SNAPSHOT"
   :description "Change detection HTTP resource for LCMAP"
-  :url "http://github.com/usgs-eros/lcmap-chromatophore"
+  :url "http://github.com/usgs-eros/lcmap-changes"
   :license {:name "Unlicense"
             :url ""}
   :dependencies [[org.clojure/clojure "1.8.0"]

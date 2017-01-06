@@ -5,13 +5,13 @@ build:
 	lein uberjar
 
 docker-image:
-	docker build --tag usgseros/lcmap-chromatophore:0.1.0-SNAPSHOT .
+	docker build --tag usgseros/lcmap-changes:0.1.0-SNAPSHOT .
 
 docker-shell:
-	docker run -it --entrypoint=/bin/bash usgseros/lcmap-chromatophore:0.1.0-SNAPSHOT
+	docker run -it --entrypoint=/bin/bash usgseros/lcmap-changes:0.1.0-SNAPSHOT
 
 docker-up:
-	docker run usgseros/lcmap-chromatophore:0.1.0-SNAPSHOT
+	docker run usgseros/lcmap-changes:0.1.0-SNAPSHOT
 
 docker-dev-up:
 	docker-compose -f dev/resources/docker-compose.yml up -d
