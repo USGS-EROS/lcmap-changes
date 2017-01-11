@@ -4,9 +4,11 @@ WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1};
 CREATE TABLE IF NOT EXISTS lcmap_changes_dev.changes(
     tile_x int,
     tile_y int,
-    tile_status text,
-    tile_status_last_updated timestamp,
     algorithm text,
+    tile_status text STATIC,
+    tile_status_last_updated timestamp STATIC,
+    inputs_url text STATIC,
+    inputs_md5 text STATIC,
     x int,
     y int,
     result text,
@@ -14,8 +16,6 @@ CREATE TABLE IF NOT EXISTS lcmap_changes_dev.changes(
     result_last_updated timestamp,
     result_status text,
     result_status_last_updated timestamp,
-    inputs_url text,
-    inputs_md5 text,
     PRIMARY KEY ((tile_x, tile_y, algorithm), x, y)
 )
 WITH COMPRESSION = { 'sstable_compression' : 'LZ4Compressor' }
