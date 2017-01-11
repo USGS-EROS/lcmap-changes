@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS lcmap_changes_dev.changes(
     y int,
     result text,
     result_md5 text,
+    result_last_updated timestamp,
     result_status text,
     result_status_last_updated timestamp,
     inputs_url text,
