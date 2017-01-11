@@ -1,0 +1,9 @@
+{:database  {:contact-points "localhost"
+             :default-keyspace "lcmap_changes_dev"}
+ :event     {:host "localhost"
+             :port 5672}
+ :http      {:port 5678
+             :join? false
+             :daemon? true}
+ :server    {:exchange "dev.lcmap.changes.server"
+             :queue "dev.lcmap.changes.server"}}

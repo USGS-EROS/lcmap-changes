@@ -33,14 +33,11 @@
        (clojure.edn/read-string)))
 
 (defn -main
-  "Start the server, worker, or both."
+  "Start the server."
   [& args]
   (let [cfg (args->cfg args)]
     (log/debugf "cfg: '%s'" cfg)
     (when (get-in cfg [:server])
       (log/info "HTTP server mode enabled")
       (require 'lcmap.clownfish.server))
-    (when (get-in cfg [:worker])
-      (log/info "AMQP worker mode enabled")
-      (require 'lcmap.clownfish.worker))
     (mount/start (mount/with-args {:config cfg}))))

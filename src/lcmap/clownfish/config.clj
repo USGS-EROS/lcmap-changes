@@ -27,22 +27,11 @@
 (def server {:exchange schema/Str
              :queue schema/Str})
 
-(def worker {:exchange {:name schema/Str}
-             :queue {:name schema/Str
-                     :bind [schema/Any]}})
-
-(def search {:url schema/Str
-             :ubid-index schema/Str
-             :ubid-index-type schema/Str
-             :max-result-size schema/Num})
-
 (def root-cfg
   {:event event
    :database database
-   :search search
    (schema/optional-key :http) http
    (schema/optional-key :server) server
-   (schema/optional-key :worker) worker
    schema/Keyword schema/Str})
 
 (defstate config
