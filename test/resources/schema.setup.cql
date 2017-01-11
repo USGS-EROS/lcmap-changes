@@ -1,7 +1,7 @@
-CREATE KEYSPACE IF NOT EXISTS lcmap_changes_dev
+CREATE KEYSPACE IF NOT EXISTS lcmap_changes_test
 WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1};
 
-CREATE TABLE IF NOT EXISTS lcmap_changes_dev.data(
+CREATE TABLE IF NOT EXISTS lcmap_changes_test.data(
     tile_x int,
     tile_y int,
     algorithm text,
