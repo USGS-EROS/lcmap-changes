@@ -5,33 +5,33 @@
             :url ""}
   :dependencies [[org.clojure/clojure "1.8.0"]
                  ;; http server
-                 [ring/ring "1.5.0"]
+                 [ring/ring "1.5.1"]
                  [ring/ring-json "0.4.0"]
                  [usgs-eros/ring-accept "0.2.0-SNAPSHOT"]
                  [usgs-eros/ring-problem "0.1.0-SNAPSHOT"]
-                 [compojure "1.5.1"]
+                 [compojure "1.5.2"]
                  ;; json/xml/html
                  [cheshire "5.6.3"]
                  [org.clojure/data.xml "0.1.0-beta2"]
                  [enlive "1.1.6"]
                  [hiccup "1.0.5"]
                  ;; persistence
-                 [com.datastax.cassandra/cassandra-driver-core "3.1.2"]
+                 [com.datastax.cassandra/cassandra-driver-core "3.1.3"]
                  [cc.qbits/alia-all "3.3.0"]
                  [cc.qbits/hayt "3.2.0"]
                  ;; messaging
-                 [com.novemberain/langohr "3.6.1"]
+                 [com.novemberain/langohr "3.7.0"]
                  ;; logging
                  [org.clojure/tools.logging "0.3.1"]
-                 [org.slf4j/slf4j-log4j12 "1.7.21"]
+                 [org.slf4j/slf4j-log4j12 "1.7.22"]
                  ;; state management
-                 [mount "0.1.10"]
+                 [mount "0.1.11"]
                  ;; configuration
                  [usgs-eros/uberconf "0.1.0-SNAPSHOT"]
                  ;; cryptographic checking
                  [digest "1.4.5"]
                  [dire "0.5.4"]
-                 [org.clojure/core.memoize "0.5.8"]
+                 [org.clojure/core.memoize "0.5.9"]
                  [org.clojure/data.xml "0.1.0-beta1"]
                  [org.clojure/data.zip "0.1.2"]
                  [gov.usgs.eros/lcmap-commons "1.0.1-SNAPSHOT"]
