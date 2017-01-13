@@ -55,23 +55,67 @@
                              "*/*" to-json))
 
 (defn respond-with
-  ""
   [request response]
   (supported-types request response))
 
-;;; Routes
+;;; request handler helpers
+(defn algorithm-available?
+  [{:keys [algorithm]}]
+  true)
 
+(defn x-y-in-scope?
+  [{:keys [x y]}]
+  true)
+
+(defn change-results-exist?
+  [{:keys [x y algorithm]}]
+  true)
+
+;;; request handlers
+(defn get-changes
+  [{{x :x
+     y :y
+     a :algorithm
+     r :refresh
+     :or {r false}} :params}]
+  (let [data   {:x x :y y :algorithm a :refresh (boolean r)}
+        alg?   (future (algorithm-available? data))
+        valid? {:x-y-in-scope (x-y-in-scope? data)
+                :algorithm-available @alg?}])
+
+  (if (not-every? true? (vals valid?))
+    {:status 202 :body (merge data valid?)}
+    (let [src?      (future (source-data-available? data))
+          results?  {:change-results-exist (change-results-exist? data)}
+          source?   {:source-data-available @src?}
+          doquery?  (and (not (:refresh data))
+                         (:change-results-exist results?))
+          runtile?  (and (not doquery?)
+                         (:source-data-available source?))
+          body      (merge data valid? results? source? {:doquery doquery?
+                                                         :runtile runtile?})]
+      (cond
+        doquery? {:status 202 
+                  :body (merge body {:changes (run-the-query-and-return)})}
+        runtile? {:status 202
+                  :body (merge body {:ticket (run-the-tile-and-return)})}
+        :else    {:status 202
+                  :body body}))))
+
+;;; Routes
 (defn resource
   "Handlers for landsat resource."
   []
   (wrap-handler
    (context "/changes" request
      (GET    "/" []
-             (with-meta {:status 200}
-               {:template html/default}))
+       (with-meta
+         {:status 200}
+         {:template html/default}))
      (ANY    "/" []
-             (with-meta (allow ["GET"])
-               {:template html/default}))
-     (GET    "/problem/" []
-             {:status 200 :body "problem resource"}))
+       (with-meta
+         (allow ["GET"])
+         {:template html/default}))
+     (GET "/problem/" []
+       {:status 200 :body "problem resource"}))
    prepare-with respond-with))
