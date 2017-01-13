@@ -63,13 +63,34 @@
   [{:keys [algorithm]}]
   true)
 
-(defn x-y-in-scope?
+(defn source-data-available?
   [{:keys [x y]}]
   true)
 
 (defn change-results-exist?
   [{:keys [x y algorithm]}]
   true)
+
+(defn query-data
+  [{:keys [x y algorithm]}]
+  {:algorithm algorithm
+   :start  12343
+   :end    45673
+   :days   [443 441 322]
+   :reds   [1 2 3]
+   :blues  [1 2 3]
+   :greens [1 2 3]
+   :nirs   [1 2 3]
+   :swir1s [1 2 3]
+   :swir2s [1 2 3]
+   :whatever ["the" "results" "are"]})
+
+(defn run-tile
+  [{:keys [x y algorithm] :as data}]
+  (let [existing-ticket (snap-x-y-and-check-iwds data)]
+    (if (some? existing-ticket)
+      existing-ticket
+      (enter-new-ticket-and-return))))
 
 ;;; request handlers
 (defn get-changes
@@ -80,9 +101,7 @@
      :or {r false}} :params}]
   (let [data   {:x x :y y :algorithm a :refresh (boolean r)}
         alg?   (future (algorithm-available? data))
-        valid? {:x-y-in-scope (x-y-in-scope? data)
-                :algorithm-available @alg?}])
-
+        valid? {:algorithm-available @alg?}])
   (if (not-every? true? (vals valid?))
     {:status 202 :body (merge data valid?)}
     (let [src?      (future (source-data-available? data))
@@ -95,10 +114,10 @@
           body      (merge data valid? results? source? {:doquery doquery?
                                                          :runtile runtile?})]
       (cond
-        doquery? {:status 202 
-                  :body (merge body {:changes (run-the-query-and-return)})}
+        doquery? {:status 202
+                  :body (merge body {:changes (query-data data)})}
         runtile? {:status 202
-                  :body (merge body {:ticket (run-the-tile-and-return)})}
+                  :body (merge body {:ticket (run-tile data)})}
         :else    {:status 202
                   :body body}))))
 
