@@ -100,8 +100,7 @@
      r :refresh
      :or {r false}} :params}]
   (let [data   {:x x :y y :algorithm a :refresh (boolean r)}
-        alg?   (future (algorithm-available? data))
-        valid? {:algorithm-available @alg?}])
+        valid? {:algorithm-available (algorithm-available? data)}])
   (if (not-every? true? (vals valid?))
     {:status 202 :body (merge data valid?)}
     (let [src?      (future (source-data-available? data))
