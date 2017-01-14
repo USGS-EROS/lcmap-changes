@@ -71,7 +71,7 @@
   [{:keys [x y algorithm]}]
   true)
 
-(defn query-data
+(defn retrieve-changes
   [{:keys [x y algorithm]}]
   {:algorithm algorithm
    :start  12343
@@ -85,7 +85,7 @@
    :swir2s [1 2 3]
    :whatever ["the" "results" "are"]})
 
-(defn run-tile
+(defn schedule-change-detection
   [{:keys [x y algorithm] :as data}]
   (let [existing-ticket (snap-x-y-and-check-iwds data)]
     (if (some? existing-ticket)
@@ -94,46 +94,48 @@
 
 ;;; request handlers
 (defn get-changes
-  [{{x :x
-     y :y
-     a :algorithm
-     r :refresh
-     :or {r false}} :params}]
+  [x y algorithm refresh]
   (let [data   {:x x :y y :algorithm a :refresh (boolean r)}
-        valid? {:algorithm-available (algorithm-available? data)}])
-  (if (not-every? true? (vals valid?))
-    {:status 202 :body (merge data valid?)}
-    (let [src?      (future (source-data-available? data))
-          results?  {:change-results-exist (change-results-exist? data)}
-          source?   {:source-data-available @src?}
-          doquery?  (and (not (:refresh data))
-                         (:change-results-exist results?))
-          runtile?  (and (not doquery?)
-                         (:source-data-available source?))
-          body      (merge data valid? results? source? {:doquery doquery?
-                                                         :runtile runtile?})]
-      (cond
-        doquery? {:status 202
-                  :body (merge body {:changes (query-data data)})}
-        runtile? {:status 202
-                  :body (merge body {:ticket (run-tile data)})}
-        :else    {:status 202
-                  :body body}))))
-
+        valid? {:algorithm-available (algorithm-available? data)}]
+    (if (not-every? true? (vals valid?)
+            {:status 400 :body (merge data valid?)}
+            (let [src?      (future (source-data-available? data))
+                  results?  {:change-results-exist (change-results-exist? data)}
+                  source?   {:source-data-available @src?}
+                  doquery?  (and (not (:refresh data))
+                                 (:change-results-exist results?))
+                  runtile?  (and (not doquery?)
+                                 (:source-data-available source?))
+                  body      (merge data valid? results? source?
+                                   {:doquery doquery? :runtile runtile?})]
+              (cond
+                doquery? {:status 200
+                          :body (merge body
+                                       {:changes (retrieve-changes data)})}
+                runtile? {:status 202
+                          :body (merge body
+                                       {:ticket (schedule-change-detection data)})}
+                :else    {:status 422
+                          :body body}))))))
 ;;; Routes
 (defn resource
-  "Handlers for landsat resource."
+  "Handlers for changes resource."
   []
   (wrap-handler
-   (context "/changes" request
-     (GET    "/" []
-       (with-meta
-         {:status 200}
-         {:template html/default}))
-     (ANY    "/" []
-       (with-meta
-         (allow ["GET"])
-         {:template html/default}))
-     (GET "/problem/" []
-       {:status 200 :body "problem resource"}))
+   (context "/changes/v0-beta" request
+     (GET "/"
+          []
+          (with-meta {:status 200}{:template html/default}))
+
+     (GET "/:algorithm{.+}/:x{\d.+}/:y{\d.+}"
+          {{x :x y :y a :algorithm r :refresh :or {r false}} :params}
+          (with-meta (get-changes a x y r) {:template html/default}))
+
+     (ANY "/"
+          []
+          (with-meta (allow ["GET"]) {:template html/default}))
+
+     (GET "/problem/"
+          []
+          {:status 200 :body "problem resource"}))
    prepare-with respond-with))
