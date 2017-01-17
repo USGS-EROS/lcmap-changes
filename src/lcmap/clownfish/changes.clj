@@ -6,6 +6,7 @@
             [clj-time.coerce :as tc]
             [clojure.tools.logging :as log]
             [clojure.string :as str]
+            [clostache.parser :as template]
             [compojure.core :refer :all]
             [langohr.exchange :as le]
             [langohr.basic :as lb]
@@ -89,16 +90,14 @@
 
 (def tile-spec {:tile_x 10 :tile_y 10 :shift_x 0 :shift_y 0})
 
+;;;  :tile_url can be templated using clostache syntax: {{target}}
+;;;; example: http://localhost:5678/landsat/tiles?x={{x}}&y={{y}}
 (defn build-input-url [{:keys [x y algorithm] :as data}]
-  (let [algorithm (:inputs_endpoint (get-algorithm data))
-        endpoint (strip (:inputs_endpoint algorithm))
-        ubids (slurp (str endpoint "/ubids" (:ubids_query algorithm)))]
-    (str endpoint
-         "/landsat/tiles"
-         "?x=" x
-         "&y=" y
-         "&acquired=*/*"
-         (map (str "&ubid=" %) ubids))))
+  "Constructs url to retrieve tiles for algorithm input."
+  (let [alg       (get-algorithm data)
+        ubids     (slurp (:ubid_query alg))
+        tiles_url (template/render (:tiles_url alg) data)]
+    (str/join tile_url #(map (str "&ubid=" %) (sort ubids)))))
 
 (defn snap [x y]
   (tile/snap x y tile-spec))
