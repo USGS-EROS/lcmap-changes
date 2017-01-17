@@ -2,12 +2,21 @@
   (:require [camel-snake-kebab.core :refer [->snake_case_keyword]]
             [camel-snake-kebab.extras :refer [transform-keys]]
             [cheshire.core :as json]
+            [clj-time.core :as time]
             [clojure.tools.logging :as log]
             [clojure.string :as str]
             [compojure.core :refer :all]
-            [ring.util.accept :refer [accept]]
+            [langohr.exchange :as le]
+            [langohr.basic :as lb]
+            [lcmap.commons.tile :as tile]
+            [lcmap.clownfish.db :as db]
+            [lcmap.clownfish.event :refer [amqp-channel]]
             [lcmap.clownfish.html :as html]
-            [lcmap.clownfish.middleware :refer [wrap-handler]]))
+            [lcmap.clownfish.middleware :refer [wrap-handler]]
+            [mount.core :as mount :refer [defstate]]
+            [qbits.hayt :as hayt]
+            [ring.util.accept :refer [accept]]
+            [schema.core :as schema]))
 
 (defn allow [& verbs]
   (log/debug "explaining allow verbs")
@@ -61,81 +70,112 @@
 ;;; request handler helpers
 (defn algorithm-available?
   [{:keys [algorithm]}]
-  true)
+  (db/execute (hayt/select :algorithms (hayt/where [[= :algorithm algorithm]
+                                                    [= :enabled true]]))))
 
 (defn source-data-available?
   [{:keys [x y]}]
   true)
 
-(defn change-results-exist?
-  [{:keys [x y algorithm]}]
+(defn send-event [ticket]
   true)
 
-(defn retrieve-changes
-  [{:keys [x y algorithm]}]
-  {:algorithm algorithm
-   :start  12343
-   :end    45673
-   :days   [443 441 322]
-   :reds   [1 2 3]
-   :blues  [1 2 3]
-   :greens [1 2 3]
-   :nirs   [1 2 3]
-   :swir1s [1 2 3]
-   :swir2s [1 2 3]
-   :whatever ["the" "results" "are"]})
+(def tile-spec {:tile_x 10 :tile_y 10 :shift_x 0 :shift_y 0})
 
-(defn schedule-change-detection
+(defn build-input-url [data]
+  "the url")
+
+(defn snap [x y]
+  (tile/snap x y tile-spec))
+
+(defn stale?
+  [change-result]
+  false)
+
+(defn get-change-results
   [{:keys [x y algorithm] :as data}]
-  (let [existing-ticket (snap-x-y-and-check-iwds data)]
-    (if (some? existing-ticket)
-      existing-ticket
-      (enter-new-ticket-and-return))))
+   (let [[tile_x, tile_y] (snap x y)]
+     (first (db/execute (hayt/select :results
+                              (hayt/where [[= :tile_x tile_x]
+                                           [= :tile_y tile_y]
+                                           [= :algorithm algorithm]
+                                           [= :x x]
+                                           [= :y y]]))))))
+(defn get-ticket
+  [{:keys [x y algorithm] :as data}]
+  (let [results (get-change-results data)
+        {:keys [tile_update_ended tile_update_requested]} results]
+    ())
 
-;;; request handlers
+  (select-keys
+   (get-change-results data)
+   [:tile_x
+    :tile_y
+    :algorithm
+    :x
+    :y
+    :tile_update_requested
+    :tile_update_began
+    :tile_update_ended
+    :inputs_url]))
+       ;; where tile_update_ended > tile_update_requested
+
+(defn create-ticket
+  [{:keys [x y algorithm] :as data}]
+  (let [[tile_x tile_y] (tile/snap x y tile-spec)
+        ticket {:tile_x tile_x
+                :tile_y tile_y
+                :algorithm algorithm
+                :x x
+                :y y
+                :tile_update_requested (time/now)
+                :tile_update_began (long 0)
+                :tile_update_ended (long 0)
+                :inputs_url (build-input-url data)}]
+    (send-event ticket)
+    (db/execute (hayt/insert :results (hayt/values ticket)))
+    ticket))
+
+(defn schedule
+  [{:keys [x y algorithm] :as data}]
+  (or (get-ticket data)(create-ticket data)))
+
+;;;; Request Handlers
+;;; It is critical point to be made that as the code is currently structured,
+;;; the parameters and return values of request handler functions
+;;; control the versioned resource interface.  Care must be taken to not
+;;; inadvertently alter the resource interface by changing either the
+;;; parameters or returns.  Once clojure 1.9 is generally available, the
+;;; interface will be able to be described via clojure.spec.  Until then,
+;;; be careful!
 (defn get-changes
-  [x y algorithm refresh]
-  (let [data   {:x x :y y :algorithm a :refresh (boolean r)}
-        valid? {:algorithm-available (algorithm-available? data)}]
-    (if (not-every? true? (vals valid?)
-            {:status 400 :body (merge data valid?)}
-            (let [src?      (future (source-data-available? data))
-                  results?  {:change-results-exist (change-results-exist? data)}
-                  source?   {:source-data-available @src?}
-                  doquery?  (and (not (:refresh data))
-                                 (:change-results-exist results?))
-                  runtile?  (and (not doquery?)
-                                 (:source-data-available source?))
-                  body      (merge data valid? results? source?
-                                   {:doquery doquery? :runtile runtile?})]
-              (cond
-                doquery? {:status 200
-                          :body (merge body
-                                       {:changes (retrieve-changes data)})}
-                runtile? {:status 202
-                          :body (merge body
-                                       {:ticket (schedule-change-detection data)})}
-                :else    {:status 422
-                          :body body}))))))
-;;; Routes
+  [{{x :x y :y a :algorithm r :refresh :or {r false}} :params}]
+  (let [data    {:x x :y y :algorithm a :refresh (boolean r)}
+        results (get-change-results data)]
+       (if (and results (not (nil? (:result results))) (not (:refresh data)))
+        {:status 200 :body (merge data {:changes results})}
+        (let [src? (future (source-data-available? data))
+              alg? (algorithm-available? data)
+              valid? {:algorithm-available alg? :source-data-available? @src?}]
+             (if (not-every? true? (vals valid?))
+               {:status 422 :body (merge data valid?)}
+               {:status 202 :body (merge data {:ticket (schedule data)})})))))
+
+;;;; Resources
 (defn resource
   "Handlers for changes resource."
   []
   (wrap-handler
    (context "/changes/v0-beta" request
-     (GET "/"
-          []
-          (with-meta {:status 200}{:template html/default}))
-
-     (GET "/:algorithm{.+}/:x{\d.+}/:y{\d.+}"
-          {{x :x y :y a :algorithm r :refresh :or {r false}} :params}
-          (with-meta (get-changes a x y r) {:template html/default}))
-
-     (ANY "/"
-          []
-          (with-meta (allow ["GET"]) {:template html/default}))
-
-     (GET "/problem/"
-          []
+     (GET "/" []
+          (with-meta {:status 200}
+            {:template html/default}))
+     (GET "/:algorithm{.+}/:x{\\d.+}/:y{\\d.+}" []
+          (with-meta (get-changes request)
+            {:template html/default}))
+     (ANY "/" []
+          (with-meta (allow ["GET"])
+            {:template html/default}))
+     (GET "/problem/" []
           {:status 200 :body "problem resource"}))
    prepare-with respond-with))

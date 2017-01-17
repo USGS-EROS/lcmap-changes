@@ -1,7 +1,14 @@
 CREATE KEYSPACE IF NOT EXISTS lcmap_changes_test
 WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1};
 
-CREATE TABLE IF NOT EXISTS lcmap_changes_test.data(
+CREATE TABLE IF NOT EXISTS lcmap_changes_test.algorithms(
+    algorithm text PRIMARY KEY,
+    inputs_host text,
+    inputs_port int,
+    enabled boolean
+);
+
+CREATE TABLE IF NOT EXISTS lcmap_changes_test.results(
     tile_x int,
     tile_y int,
     algorithm text,
@@ -13,7 +20,7 @@ CREATE TABLE IF NOT EXISTS lcmap_changes_test.data(
     y int,
     result text,
     result_md5 text,
-    result_last_updated timestamp,
+    result_produced timestamp,
     result_status text,
     result_status_last_updated timestamp,
     PRIMARY KEY ((tile_x, tile_y, algorithm), x, y)
