@@ -90,7 +90,7 @@
 
 (def tile-spec {:tile_x 10 :tile_y 10 :shift_x 0 :shift_y 0})
 
-;;;  :tile_url can be templated using clostache syntax: {{target}}
+;;;  :tile_url can be templated using Mustache syntax >= 1.0: {{target}}
 ;;;; example: http://localhost:5678/landsat/tiles?x={{x}}&y={{y}}
 (defn build-input-url [{:keys [x y algorithm] :as data}]
   "Constructs url to retrieve tiles for algorithm input."
