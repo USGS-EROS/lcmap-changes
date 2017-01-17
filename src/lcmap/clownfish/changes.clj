@@ -3,12 +3,14 @@
             [camel-snake-kebab.extras :refer [transform-keys]]
             [cheshire.core :as json]
             [clj-time.core :as time]
+            [clj-time.coerce :as tc]
             [clojure.tools.logging :as log]
             [clojure.string :as str]
             [compojure.core :refer :all]
             [langohr.exchange :as le]
             [langohr.basic :as lb]
             [lcmap.commons.tile :as tile]
+            [lcmap.commons.string :refer [strip]]
             [lcmap.clownfish.db :as db]
             [lcmap.clownfish.event :refer [amqp-channel]]
             [lcmap.clownfish.html :as html]
@@ -67,11 +69,16 @@
   [request response]
   (supported-types request response))
 
+(defn get-algorithm
+  [{:keys [algorithm]}]
+  ((first (db/execute)
+          (hayt/select :algorithms (hayt/where [[= :algorithm algorithm]])))))
+
 ;;; request handler helpers
 (defn algorithm-available?
-  [{:keys [algorithm]}]
-  (db/execute (hayt/select :algorithms (hayt/where [[= :algorithm algorithm]
-                                                    [= :enabled true]]))))
+  "Determines if an algorithm is defined and enabled in the system."
+  [{:keys [algorithm] :as data}]
+  (true? (:enabled (get-algorithm data))))
 
 (defn source-data-available?
   [{:keys [x y]}]
@@ -82,61 +89,56 @@
 
 (def tile-spec {:tile_x 10 :tile_y 10 :shift_x 0 :shift_y 0})
 
-(defn build-input-url [data]
-  "the url")
+(defn build-input-url [{:keys [x y algorithm] :as data}]
+  (let [algorithm (:inputs_endpoint (get-algorithm data))
+        endpoint (strip (:inputs_endpoint algorithm))
+        ubids (slurp (str endpoint "/ubids" (:ubids_query algorithm)))]
+    (str endpoint
+         "/landsat/tiles"
+         "?x=" x
+         "&y=" y
+         "&acquired=*/*"
+         (map (str "&ubid=" %) ubids))))
 
 (defn snap [x y]
   (tile/snap x y tile-spec))
 
-(defn stale?
-  [change-result]
-  false)
-
 (defn get-change-results
   [{:keys [x y algorithm] :as data}]
-   (let [[tile_x, tile_y] (snap x y)]
-     (first (db/execute (hayt/select :results
-                              (hayt/where [[= :tile_x tile_x]
-                                           [= :tile_y tile_y]
-                                           [= :algorithm algorithm]
-                                           [= :x x]
-                                           [= :y y]]))))))
-(defn get-ticket
-  [{:keys [x y algorithm] :as data}]
-  (let [results (get-change-results data)
-        {:keys [tile_update_ended tile_update_requested]} results]
-    ())
+  (let [[tile_x, tile_y] (snap x y)]
+    (first (db/execute (hayt/select :results
+                             (hayt/where [[= :tile_x tile_x]
+                                          [= :tile_y tile_y]
+                                          [= :algorithm algorithm]
+                                          [= :x x]
+                                          [= :y y]]))))))
 
-  (select-keys
-   (get-change-results data)
-   [:tile_x
-    :tile_y
-    :algorithm
-    :x
-    :y
-    :tile_update_requested
-    :tile_update_began
-    :tile_update_ended
-    :inputs_url]))
-       ;; where tile_update_ended > tile_update_requested
+(defn get-ticket
+  "Retrieves existing ticket or nil."
+  [{:keys [x y algorithm] :as data}]
+  (dissoc (get-change-results data) :result :result_md5
+                                    :result_status :result_produced))
 
 (defn create-ticket
+  "Creates a new ticket for updating algorithm results.  Does not account for
+   existing tickets."
   [{:keys [x y algorithm] :as data}]
-  (let [[tile_x tile_y] (tile/snap x y tile-spec)
+  (let [[tile_x tile_y] (snap x y)
         ticket {:tile_x tile_x
                 :tile_y tile_y
                 :algorithm algorithm
                 :x x
                 :y y
-                :tile_update_requested (time/now)
-                :tile_update_began (long 0)
-                :tile_update_ended (long 0)
+                :tile_update_requested (str (time/now))
+                :tile_update_began nil
+                :tile_update_ended nil
                 :inputs_url (build-input-url data)}]
     (send-event ticket)
     (db/execute (hayt/insert :results (hayt/values ticket)))
     ticket))
 
 (defn schedule
+  "Schedules algorithm execution while preventing duplicates"
   [{:keys [x y algorithm] :as data}]
   (or (get-ticket data)(create-ticket data)))
 

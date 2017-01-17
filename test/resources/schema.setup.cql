@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS lcmap_changes_test.algorithms(
     algorithm text PRIMARY KEY,
     inputs_host text,
     inputs_port int,
+    ubid_query text,
     enabled boolean
 );
 
