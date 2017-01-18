@@ -84,10 +84,15 @@
   [{:keys [x y]}]
   true)
 
+;;; TODO - query landsat/tile-specs/all
 (defstate tile-specs
   :start {:tile_x 10 :tile_y 10 :shift_x 0 :shift_y 0})
 
-(defn snap [x y]
+;;; load ts in fn's sig and you have a loaded partial ready to go.
+(defstate snap
+  :start (partial (fn [ts x y](tile/snap x y ts))))
+
+(defn snap [tile-specs x y]
   (tile/snap x y tile-specs))
 
 (defn get-change-results
