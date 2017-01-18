@@ -1,22 +1,17 @@
+
 (ns lcmap.clownfish.changes
   (:require [camel-snake-kebab.core :refer [->snake_case_keyword]]
             [camel-snake-kebab.extras :refer [transform-keys]]
             [cheshire.core :as json]
-            [clj-time.core :as time]
-            [clj-time.coerce :as tc]
             [clojure.tools.logging :as log]
             [clojure.string :as str]
             [compojure.core :refer :all]
-            [langohr.exchange :as le]
-            [langohr.basic :as lb]
-            [lcmap.commons.tile :as tile]
             [lcmap.clownfish.algorithm :as alg]
-            [lcmap.clownfish.db :as db]
-            [lcmap.clownfish.event :refer [amqp-channel]]
+            [lcmap.clownfish.config :refer [config]]
             [lcmap.clownfish.html :as html]
             [lcmap.clownfish.middleware :refer [wrap-handler]]
-            [mount.core :as mount :refer [defstate]]
-            [qbits.hayt :as hayt]
+            [lcmap.clownfish.results :as change-results]
+            [lcmap.clownfish.ticket :as ticket]
             [ring.util.accept :refer [accept]]))
 
 (defn allow [& verbs]
@@ -68,73 +63,10 @@
   [request response]
   (supported-types request response))
 
-(defn publish
-  "Add ticket to queue for executing change detection."
-  [ticket]
-  (let [exchange (get-in config [:server :exchange])
-        routing "change-detection"
-        payload (json/encode ticket)]
-    (log/debugf "publish '%s' ticket: %s" routing payload)
-    (lb/publish amqp-channel exchange routing payload
-                {:content-type "application/json"}))
-  ticket)
-
 ;;; TODO - replace with implementation
 (defn source-data-available?
   [{:keys [x y]}]
   true)
-
-;;; TODO - query landsat/tile-specs/all
-(defstate tile-specs
-  :start {:tile_x 10 :tile_y 10 :shift_x 0 :shift_y 0})
-
-;;; load ts in fn's sig and you have a loaded partial ready to go.
-(defstate snap
-  :start (partial (fn [ts x y](tile/snap x y ts))))
-
-(defn snap [tile-specs x y]
-  (tile/snap x y tile-specs))
-
-(defn get-change-results
-  "Returns change results or nil"
-  [{:keys [x y algorithm] :as data}]
-  (let [[tile_x, tile_y] (snap x y)]
-    (->> (hayt/where [[= :tile_x tile_x]
-                      [= :tile_y tile_y]
-                      [= :algorithm algorithm]
-                      [= :x x]
-                      [= :y y]])
-         (hayt/select :results)
-         (db/execute)
-         (first))))
-
-(defn get-ticket
-  "Retrieves existing ticket or nil."
-  [{:keys [x y algorithm] :as data}]
-  (dissoc (get-change-results data)
-          :result :result_md5 :result_status :result_produced))
-
-(defn create-ticket
-  "Creates a new ticket for updating algorithm results.  Does not account for
-   existing tickets."
-  [{:keys [x y algorithm] :as data}]
-  (let [[tile_x tile_y] (snap x y)
-        ticket {:tile_x tile_x
-                :tile_y tile_y
-                :algorithm algorithm
-                :x x
-                :y y
-                :tile_update_requested (str (time/now))
-                :tile_update_began nil
-                :tile_update_ended nil
-                :inputs_url (alg/inputs data)}]
-    (->> ticket (publish) (hayt/values) (hayt/insert :results) (db/execute))
-    ticket))
-
-(defn schedule
-  "Schedules algorithm execution while preventing duplicates"
-  [{:keys [x y algorithm] :as data}]
-  (or (get-ticket data) (create-ticket data)))
 
 ;;;; Request Handlers
 ;;; It is critical point to be made that as the code is currently structured,
@@ -147,7 +79,7 @@
 (defn get-changes
   [{{x :x y :y a :algorithm r :refresh :or {r false}} :params}]
   (let [data    {:x x :y y :algorithm a :refresh (boolean r)}
-        results (get-change-results data)]
+        results (change-results/find data)]
     (if (and results (not (nil? (:result results))) (not (:refresh data)))
       {:status 200 :body (merge data {:changes results})}
       (let [src?   (future (source-data-available? data))
@@ -155,7 +87,7 @@
             valid? {:algorithm-available alg? :source-data-available? @src?}]
         (if (not-every? true? (vals valid?))
           {:status 422 :body (merge data valid?)}
-          {:status 202 :body (merge data {:ticket (schedule data)})})))))
+          {:status 202 :body (merge data {:ticket (ticket/schedule data)})})))))
 
 ;;;; Resources
 (defn resource

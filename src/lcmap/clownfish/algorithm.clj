@@ -26,9 +26,9 @@
 
 ;;;  :tile_url can be templated using Mustache syntax >= 1.0: {{target}}
 ;;;  example: http://localhost:5678/landsat/tiles?x={{x}}&y={{y}}
+;;; "http://localhost:5678/landsat/tiles?x={{x}}&y={{y}}{{#ubids}}&ubid={{.}}{{/ubids}}"
 (defn inputs [{:keys [x y algorithm] :as data}]
   "Constructs url to retrieve tiles for algorithm input."
   (let [conf  (configuration data)
-        ubids (json/decode (slurp (:ubid_query conf)))
-        url   (template/render (:tiles_url conf) data)]
-    (str/join url #(map (str "&ubid=" %) (sort ubids)))))
+        ubids (json/decode (slurp (:ubid_query conf)))]
+    (template/render (:tiles_url conf) (merge data {:ubids ubids}))))
