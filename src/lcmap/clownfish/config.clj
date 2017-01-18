@@ -27,9 +27,12 @@
 (def server {:exchange schema/Str
              :queue schema/Str})
 
+(def state {:tile-specs-url schema/Str})
+
 (def root-cfg
   {:event event
    :database database
+   :state state
    (schema/optional-key :http) http
    (schema/optional-key :server) server
    schema/Keyword schema/Str})

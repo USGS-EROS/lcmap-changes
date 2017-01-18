@@ -1,25 +1,27 @@
 (ns lcmap.clownfish.algorithm
   (require [cheshire.core :as json]
+           [clj-time.core :as time]
+           [clj-time.coerce :as tc]
            [clojure.tools.logging :as log]
            [clojure.string :as str]
            [clostache.parser :as template]
            [lcmap.clownfish.db :as db]
            [qbits.hayt :as hayt]
-           [schema.core :as schema]))
+           [schema.core :as sc]))
 
-(def algorithm-schema
-  {:algorithm schema/Str
-   :enabled schema/Boolean
-   :ubid_query schema/Str
-   :tiles_url schema/Str})
+(def schema
+  {:algorithm sc/Str
+   :enabled sc/Bool
+   :ubid_query sc/Str
+   :tiles_url sc/Str})
 
 (defn validate
    "Produce a map of errors if the algorithm is invalid, otherwise nil."
    [algorithm-definition]
-   (schema/check algorithm-schema algorithm-definition))
+   (sc/check schema algorithm-definition))
 
 (defn all
-  "Retreives all algorithms."
+  "Retreive all algorithms."
   []
   (db/execute (hayt/select :algorithms)))
 
@@ -30,7 +32,7 @@
                            (hayt/values algorithm))))
 
 (defn configuration
-  "Retrieves algorithm definition or nil"
+  "Retrieve algorithm configuration or nil"
   [{:keys [algorithm]}]
   (->> (hayt/where [[= :algorithm algorithm]])
        (hayt/select :algorithms)
@@ -38,7 +40,7 @@
        (first)))
 
 (defn available?
-  "Determines if an algorithm is defined and enabled in the system."
+  "Determine if an algorithm is defined & enabled"
   [{:keys [algorithm] :as data}]
   (true? (:enabled (configuration data))))
 
@@ -48,8 +50,11 @@
 ;;; "http://host:5678/landsat/tiles
 ;;; ?x={{x}}&y={{y}}&acquired=2015-01-01/{{now}}{{#ubids}}&ubid={{.}}{{/ubids}}"
 ;;;
+;;; Becomes:
+;;; http://host:5678/landsat/tiles/x/y/acquired=2015-01-01/2017-01-18&ubids="ubid"
+;;;
 (defn inputs [{:keys [x y algorithm] :as data}]
-  "Constructs url to retrieve tiles for algorithm input."
+  "Construct url to retrieve tiles for algorithm input"
   (let [conf  (configuration data)
         ubids (json/decode (slurp (:ubid_query conf)))
         now   (tc/to-string (time/now))]

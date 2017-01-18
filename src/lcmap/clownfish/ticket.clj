@@ -6,10 +6,12 @@
             [langohr.basic :as lb]
             [lcmap.clownfish.algorithm :as alg]
             [lcmap.clownfish.config :refer [config]]
+            [lcmap.clownfish.db :as db]
             [lcmap.clownfish.event :refer [amqp-channel]]
             [lcmap.clownfish.results :as change-results]
             [lcmap.clownfish.state :refer [tile-specs]]
-            [lcmap.commons.tile :refer [snap]]))
+            [lcmap.commons.tile :refer [snap]]
+            [qbits.hayt :as hayt]))
 
 (defn announce
   "Add ticket to queue for executing change detection."
@@ -22,10 +24,10 @@
                 {:content-type "application/json"}))
   ticket)
 
-(defn find
+(defn retrieve
   "Retrieves existing ticket or nil."
   [{:keys [x y algorithm] :as data}]
-  (dissoc (change-results/find data)
+  (dissoc (change-results/retrieve data)
           :result :result_md5 :result_status :result_produced))
 
 (defn create
@@ -48,4 +50,4 @@
 (defn schedule
   "Schedules algorithm execution while preventing duplicates"
   [{:keys [x y algorithm] :as data}]
-  (or (find data) (create data)))
+  (or (retrieve data) (create data)))

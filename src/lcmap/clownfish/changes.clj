@@ -1,4 +1,3 @@
-
 (ns lcmap.clownfish.changes
   (:require [camel-snake-kebab.core :refer [->snake_case_keyword]]
             [camel-snake-kebab.extras :refer [transform-keys]]
@@ -20,7 +19,6 @@
    :headers {"Allow" (str/join "," verbs)}})
 
 ;;; Request entity transformers.
-
 (defn decode-json
   ""
   [body]
@@ -39,7 +37,6 @@
     request))
 
 ;;; Response entity transformers.
-
 (defn to-html
   "Encode response body as HTML."
   [response]
@@ -79,7 +76,7 @@
 (defn get-changes
   [{{x :x y :y a :algorithm r :refresh :or {r false}} :params}]
   (let [data    {:x x :y y :algorithm a :refresh (boolean r)}
-        results (change-results/find data)]
+        results (change-results/retrieve data)]
     (if (and results (not (nil? (:result results))) (not (:refresh data)))
       {:status 200 :body (merge data {:changes results})}
       (let [src?   (future (source-data-available? data))
@@ -95,7 +92,7 @@
   {:status 200 :body (alg/all)})
 
 (defn get-algorithm
-  "Returns all algorithms defined in the system."
+  "Returns an algorithm if defined in the system."
   [algorithm]
   (let [result (alg/configuration {:algorithm algorithm})]
     (if result
@@ -103,13 +100,13 @@
       ({:status 404 :body (str algorithm " not found.")}))))
 
 (defn put-algorithm
-  "Updates algorithm definitions."
+  "Updates or creates an algorithm definition"
   [algorithm {body :body}]
-  let [alg-def (merge {:algorithm algorithm} body)]
+  (let [alg-def (merge {:algorithm algorithm} body)]
     (or (some->> (alg/validate alg-def)
                  (assoc {:status 403} :body))
         (some->> (alg/upsert alg-def)
-                 (assoc {:status 202} :body))))
+                 (assoc {:status 202} :body)))))
 
 ;;;; Resources
 (defn resource

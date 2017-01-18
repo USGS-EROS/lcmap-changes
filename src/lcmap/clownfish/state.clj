@@ -1,7 +1,14 @@
 (ns lcmap.clownfish.state
-  (:require [mount.core :as mount]))
+  (:require [clojure.tools.logging :as log]
+            [lcmap.clownfish.config :refer [config]]
+            [mount.core :refer [defstate] :as mount]))
 
-;;; TODO - query landsat/tile-specs/all
 (defstate tile-specs
   ;:start {:tile_x 10 :tile_y 10 :shift_x 0 :shift_y 0})
-   :start (slurp "http://localhost:5678/landsat/tile-specs"))
+   :start (let [url (get-in config [:state :tile-specs-url])]
+              (log/info "Loading tile-specs...")
+              (try
+                (slurp url)
+                (catch Exception e
+                  (log/errorf e "Could not load tile-specs from: %s" url)
+                  (throw e)))))
