@@ -6,4 +6,5 @@
              :join? false
              :daemon? true}
  :server    {:exchange "test.lcmap.changes.server"
-             :queue "test.lcmap.changes.server"}}
+             :queue "test.lcmap.changes.server"}
+ :state     {:tile-specs-url "http://localhost:5678/landsat/tile-specs"}}
