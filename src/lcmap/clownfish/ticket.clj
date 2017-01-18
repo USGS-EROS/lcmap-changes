@@ -5,6 +5,7 @@
             [clojure.tools.logging :as log]
             [langohr.basic :as lb]
             [lcmap.clownfish.algorithm :as alg]
+            [lcmap.clownfish.config :refer [config]]
             [lcmap.clownfish.event :refer [amqp-channel]]
             [lcmap.clownfish.results :as change-results]
             [lcmap.clownfish.state :refer [tile-specs]]

@@ -89,21 +89,54 @@
           {:status 422 :body (merge data valid?)}
           {:status 202 :body (merge data {:ticket (ticket/schedule data)})})))))
 
+(defn get-algorithms
+  "Returns all algorithms defined in the system."
+  []
+  {:status 200 :body (alg/all)})
+
+(defn get-algorithm
+  "Returns all algorithms defined in the system."
+  [algorithm]
+  (let [result (alg/configuration {:algorithm algorithm})]
+    (if result
+      ({:status 200 :body result})
+      ({:status 404 :body (str algorithm " not found.")}))))
+
+(defn put-algorithm
+  "Updates algorithm definitions."
+  [algorithm {body :body}]
+  let [alg-def (merge {:algorithm algorithm} body)]
+    (or (some->> (alg/validate alg-def)
+                 (assoc {:status 403} :body))
+        (some->> (alg/upsert alg-def)
+                 (assoc {:status 202} :body))))
+
 ;;;; Resources
 (defn resource
   "Handlers for changes resource."
   []
   (wrap-handler
-   (context "/changes/v0b" request
+   (context "/changes/v0" request
      (GET "/" []
-       (with-meta {:status 200}
-         {:template html/default}))
+          (with-meta {:status 200} {:template html/default}))
+
+     (GET "/algorithms" []
+          (with-meta (get-algorithms) {:template html/default}))
+
+     (GET "/algorithm/:algorithm{.+}" [algorithm]
+          (with-meta (get-algorithm algorithm) {:template html/default}))
+
+     (PUT "/algorithm/:algorithm{.+}" [algorithm]
+          (with-meta (put-algorithm algorithm request)
+            {:template html/default}))
+
      (GET "/:algorithm{.+}/:x{\\d.+}/:y{\\d.+}" []
-       (with-meta (get-changes request)
-         {:template html/default}))
+          (with-meta (get-changes request) {:template html/default}))
+
      (ANY "/" []
-       (with-meta (allow ["GET"])
-         {:template html/default}))
+          (with-meta (allow ["GET"]) {:template html/default}))
+
      (GET "/problem/" []
-       {:status 200 :body "problem resource"}))
+          {:status 200 :body "problem resource"}))
+
    prepare-with respond-with))
