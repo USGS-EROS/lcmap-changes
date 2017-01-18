@@ -94,7 +94,7 @@
   "Handlers for changes resource."
   []
   (wrap-handler
-   (context "/changes/v0-beta" request
+   (context "/changes/v0b" request
      (GET "/" []
        (with-meta {:status 200}
          {:template html/default}))

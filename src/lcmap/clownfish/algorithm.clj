@@ -27,6 +27,7 @@
 ;;;  :tile_url can be templated using Mustache syntax >= 1.0: {{target}}
 ;;;  example: http://localhost:5678/landsat/tiles?x={{x}}&y={{y}}
 ;;; "http://localhost:5678/landsat/tiles?x={{x}}&y={{y}}{{#ubids}}&ubid={{.}}{{/ubids}}"
+;;; TODO - supplied time/now in proper format as available data to templates
 (defn inputs [{:keys [x y algorithm] :as data}]
   "Constructs url to retrieve tiles for algorithm input."
   (let [conf  (configuration data)
