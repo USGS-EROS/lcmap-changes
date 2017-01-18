@@ -10,7 +10,7 @@
             [langohr.exchange :as le]
             [langohr.basic :as lb]
             [lcmap.commons.tile :as tile]
-            [lcmap.clownfish.algorithm :as algorithm]
+            [lcmap.clownfish.algorithm :as alg]
             [lcmap.clownfish.db :as db]
             [lcmap.clownfish.event :refer [amqp-channel]]
             [lcmap.clownfish.html :as html]
@@ -87,7 +87,6 @@
 (defstate tile-specs
   :start {:tile_x 10 :tile_y 10 :shift_x 0 :shift_y 0})
 
-;;; TODO - Fill in with proper tile-spec
 (defn snap [x y]
   (tile/snap x y tile-specs))
 
@@ -107,8 +106,8 @@
 (defn get-ticket
   "Retrieves existing ticket or nil."
   [{:keys [x y algorithm] :as data}]
-  (dissoc (get-change-results data) :result :result_md5 :result_status
-                                    :result_produced))
+  (dissoc (get-change-results data)
+          :result :result_md5 :result_status :result_produced))
 
 (defn create-ticket
   "Creates a new ticket for updating algorithm results.  Does not account for
@@ -123,14 +122,14 @@
                 :tile_update_requested (str (time/now))
                 :tile_update_began nil
                 :tile_update_ended nil
-                :inputs_url (inputs-url data)}]
-    (->> ticket (publish)(hayt/values)(hayt/insert :results)(db/execute))
+                :inputs_url (alg/inputs data)}]
+    (->> ticket (publish) (hayt/values) (hayt/insert :results) (db/execute))
     ticket))
 
 (defn schedule
   "Schedules algorithm execution while preventing duplicates"
   [{:keys [x y algorithm] :as data}]
-  (or (get-ticket data)(create-ticket data)))
+  (or (get-ticket data) (create-ticket data)))
 
 ;;;; Request Handlers
 ;;; It is critical point to be made that as the code is currently structured,
@@ -144,14 +143,14 @@
   [{{x :x y :y a :algorithm r :refresh :or {r false}} :params}]
   (let [data    {:x x :y y :algorithm a :refresh (boolean r)}
         results (get-change-results data)]
-       (if (and results (not (nil? (:result results))) (not (:refresh data)))
-        {:status 200 :body (merge data {:changes results})}
-        (let [src? (future (source-data-available? data))
-              alg? (algorithm/available? data)
-              valid? {:algorithm-available alg? :source-data-available? @src?}]
-             (if (not-every? true? (vals valid?))
-               {:status 422 :body (merge data valid?)}
-               {:status 202 :body (merge data {:ticket (schedule data)})})))))
+    (if (and results (not (nil? (:result results))) (not (:refresh data)))
+      {:status 200 :body (merge data {:changes results})}
+      (let [src?   (future (source-data-available? data))
+            alg?   (alg/available? data)
+            valid? {:algorithm-available alg? :source-data-available? @src?}]
+        (if (not-every? true? (vals valid?))
+          {:status 422 :body (merge data valid?)}
+          {:status 202 :body (merge data {:ticket (schedule data)})})))))
 
 ;;;; Resources
 (defn resource
@@ -160,14 +159,14 @@
   (wrap-handler
    (context "/changes/v0-beta" request
      (GET "/" []
-          (with-meta {:status 200}
-            {:template html/default}))
+       (with-meta {:status 200}
+         {:template html/default}))
      (GET "/:algorithm{.+}/:x{\\d.+}/:y{\\d.+}" []
-          (with-meta (get-changes request)
-            {:template html/default}))
+       (with-meta (get-changes request)
+         {:template html/default}))
      (ANY "/" []
-          (with-meta (allow ["GET"])
-            {:template html/default}))
+       (with-meta (allow ["GET"])
+         {:template html/default}))
      (GET "/problem/" []
-          {:status 200 :body "problem resource"}))
+       {:status 200 :body "problem resource"}))
    prepare-with respond-with))
