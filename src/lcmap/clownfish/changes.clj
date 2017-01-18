@@ -6,20 +6,18 @@
             [clj-time.coerce :as tc]
             [clojure.tools.logging :as log]
             [clojure.string :as str]
-            [clostache.parser :as template]
             [compojure.core :refer :all]
             [langohr.exchange :as le]
             [langohr.basic :as lb]
             [lcmap.commons.tile :as tile]
-            [lcmap.commons.string :refer [strip]]
+            [lcmap.clownfish.algorithm :as algorithm]
             [lcmap.clownfish.db :as db]
             [lcmap.clownfish.event :refer [amqp-channel]]
             [lcmap.clownfish.html :as html]
             [lcmap.clownfish.middleware :refer [wrap-handler]]
             [mount.core :as mount :refer [defstate]]
             [qbits.hayt :as hayt]
-            [ring.util.accept :refer [accept]]
-            [schema.core :as schema]))
+            [ring.util.accept :refer [accept]]))
 
 (defn allow [& verbs]
   (log/debug "explaining allow verbs")
@@ -70,53 +68,47 @@
   [request response]
   (supported-types request response))
 
-(defn get-algorithm
-  [{:keys [algorithm]}]
-  ((first (db/execute)
-          (hayt/select :algorithms (hayt/where [[= :algorithm algorithm]])))))
+(defn publish
+  "Add ticket to queue for executing change detection."
+  [ticket]
+  (let [exchange (get-in config [:server :exchange])
+        routing "change-detection"
+        payload (json/encode ticket)]
+    (log/debugf "publish '%s' ticket: %s" routing payload)
+    (lb/publish amqp-channel exchange routing payload
+                {:content-type "application/json"}))
+  ticket)
 
-;;; request handler helpers
-(defn algorithm-available?
-  "Determines if an algorithm is defined and enabled in the system."
-  [{:keys [algorithm] :as data}]
-  (true? (:enabled (get-algorithm data))))
-
+;;; TODO - replace with implementation
 (defn source-data-available?
   [{:keys [x y]}]
   true)
 
-(defn send-event [ticket]
-  true)
+(defstate tile-specs
+  :start {:tile_x 10 :tile_y 10 :shift_x 0 :shift_y 0})
 
-(def tile-spec {:tile_x 10 :tile_y 10 :shift_x 0 :shift_y 0})
-
-;;;  :tile_url can be templated using Mustache syntax >= 1.0: {{target}}
-;;;; example: http://localhost:5678/landsat/tiles?x={{x}}&y={{y}}
-(defn build-input-url [{:keys [x y algorithm] :as data}]
-  "Constructs url to retrieve tiles for algorithm input."
-  (let [alg       (get-algorithm data)
-        ubids     (slurp (:ubid_query alg))
-        tiles_url (template/render (:tiles_url alg) data)]
-    (str/join tile_url #(map (str "&ubid=" %) (sort ubids)))))
-
+;;; TODO - Fill in with proper tile-spec
 (defn snap [x y]
-  (tile/snap x y tile-spec))
+  (tile/snap x y tile-specs))
 
 (defn get-change-results
+  "Returns change results or nil"
   [{:keys [x y algorithm] :as data}]
   (let [[tile_x, tile_y] (snap x y)]
-    (first (db/execute (hayt/select :results
-                             (hayt/where [[= :tile_x tile_x]
-                                          [= :tile_y tile_y]
-                                          [= :algorithm algorithm]
-                                          [= :x x]
-                                          [= :y y]]))))))
+    (->> (hayt/where [[= :tile_x tile_x]
+                      [= :tile_y tile_y]
+                      [= :algorithm algorithm]
+                      [= :x x]
+                      [= :y y]])
+         (hayt/select :results)
+         (db/execute)
+         (first))))
 
 (defn get-ticket
   "Retrieves existing ticket or nil."
   [{:keys [x y algorithm] :as data}]
-  (dissoc (get-change-results data) :result :result_md5
-                                    :result_status :result_produced))
+  (dissoc (get-change-results data) :result :result_md5 :result_status
+                                    :result_produced))
 
 (defn create-ticket
   "Creates a new ticket for updating algorithm results.  Does not account for
@@ -131,9 +123,8 @@
                 :tile_update_requested (str (time/now))
                 :tile_update_began nil
                 :tile_update_ended nil
-                :inputs_url (build-input-url data)}]
-    (send-event ticket)
-    (db/execute (hayt/insert :results (hayt/values ticket)))
+                :inputs_url (inputs-url data)}]
+    (->> ticket (publish)(hayt/values)(hayt/insert :results)(db/execute))
     ticket))
 
 (defn schedule
@@ -156,7 +147,7 @@
        (if (and results (not (nil? (:result results))) (not (:refresh data)))
         {:status 200 :body (merge data {:changes results})}
         (let [src? (future (source-data-available? data))
-              alg? (algorithm-available? data)
+              alg? (algorithm/available? data)
               valid? {:algorithm-available alg? :source-data-available? @src?}]
              (if (not-every? true? (vals valid?))
                {:status 422 :body (merge data valid?)}
