@@ -40,15 +40,13 @@ HTTP endpoint for LCMAP change detection.
     "x": 123,
     "y": 456,
     "tile_update_requested": "2017-01-01-17:57:31Z",
-    "tile_update_began": null,
-    "tile_update_ended": null,
     "inputs_url": "http://localhost:5678/landsat/tiles?x=123&y=456&acquired=2015-01-01/2017-01-01&ubid=LANDSAT_5/TM/sr_band1&ubid=LANDSAT_5/TM/sr_band2&ubid=LANDSAT_5/TM/sr_band3&ubid=LANDSAT_5/TM/sr_band4&ubid=LANDSAT_5/TM/sr_band5&ubid=LANDSAT_5/TM/sr_band7", 
    }
   ```
-  Successive calls will continue to return the ticket with HTTP 202 until a result is available.
+  Successive calls return the ticket and HTTP 202 until a result is available. 
   
-  If additional source data is available production may be rescheduled by specifying ```?refresh=true``` in the querystring.
-  Existing change results will be replaced when the tile updates complete.
+  Production may be rescheduled by specifying ```?refresh=true``` in the querystring.
+  Existing change results will be replaced once tile updates complete.
   
 ### Installation:
 TBD
