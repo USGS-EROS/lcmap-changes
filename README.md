@@ -24,7 +24,7 @@ HTTP endpoint for LCMAP change detection.
   
   If there were no results available, they are automatica{lly scheduled for production
   and the return status is HTTP 202. A ticket is returned, which is the same structure 
-  minus the result, result_md5, result_produced, and result_status fields.
+  minus the ```result, result_md5, result_produced, and result_status``` fields.
   
   Successive calls will continue to return the ticket until a result is available.
   ```json 
