@@ -26,12 +26,10 @@ HTTP endpoint for LCMAP change detection.
     "tile_update_ended": "2017-01-01-17:57:32Z",
     "inputs_url": "http://localhost:5678/landsat/tiles?x=123&y=456&acquired=2015-01-01/2017-01-01&ubid=LANDSAT_5/TM/sr_band1&ubid=LANDSAT_5/TM/sr_band2&ubid=LANDSAT_5/TM/sr_band3&ubid=LANDSAT_5/TM/sr_band4&ubid=LANDSAT_5/TM/sr_band5&ubid=LANDSAT_5/TM/sr_band7",
     "inputs_md5": "189e725f4587b679740f0f7783745056"   
-   }
+   } 
   ```
   
-  If there were no results available, they are automatically scheduled for production
-  and the return status is HTTP 202. A ticket is returned, which is the same structure 
-  minus the ```result, result_md5, result_produced, and result_status``` fields.
+  If there were no results available production is automatically scheduled.  This response code is HTTP 202 and response body is a production ticket.
    ```json
   {
     "tile_x": 32,
