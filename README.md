@@ -15,7 +15,7 @@ HTTP endpoint for LCMAP change detection.
   {"result": "result_structure", 
    "result_md5": "abc123",
    "result_status": "the status", 
-   "result_produced": "2017-01-01-17:57:33Z"
+   "result_produced": "2017-01-01-17:57:33Z",
    "tile_x": 123,
    "tile_y": 456,
    "x": 678,
