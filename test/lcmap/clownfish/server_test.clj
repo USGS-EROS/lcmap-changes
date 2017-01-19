@@ -11,15 +11,11 @@
     (testing "entry-point"
       (let [resp (req :get "http://localhost:5679/changes")]
         (is (= 200 (:status resp)))))
-    (testing "unsupported verbs"
-      (let [resp (req :put "http://localhost:5679/changes")]
-        (is (= 405 (:status resp))))
-      (let [resp (req :delete "http://localhost:5679/changes")]
-        (is (= 405 (:status resp)))))
-    (testing "search for unsupported type"
+    (testing "search for an unsupported type still returns JSON"
       (let [resp (req :get "http://localhost:5679/changes"
                       :headers {"Accept" "application/foo"})]
-        (is (= 406 (:status resp)))))))
+        (is (= 200 (:status resp)))
+        (is (= "application/json" (get-in resp [:headers :content-type])))))))
 
 (deftest changes-health-resource
   (with-system
