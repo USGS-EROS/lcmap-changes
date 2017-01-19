@@ -54,10 +54,12 @@ HTTP endpoint for LCMAP change detection.
 #### Add/Update an algorithm:
   ```
   # HTTP PUT hostname:port/changes/algorithm/<algorithm-name-and-version>
-  # {"enabled": true|false,
+  # {
+  #   "enabled": true|false,
   #   "ubid_query":"ElasticSearch syntax query for ubid tags", 
   #   "tiles_url":"url to retrieve inputs, either file or network.  Mustache syntax accepted"
   # }
+  #
   # Several mustache template variables are available.  They are:
   # {{x}} = integer - requested x coordinate
   # {{y}} = integer - requested y coordinate
