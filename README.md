@@ -7,6 +7,7 @@ HTTP endpoint for LCMAP change detection.
   # usage for retrieving change outputs are:
   # HTTP GET hostname:port/change/<algorithm-and-version>/x/y?refresh=true|false
   # Example:
+  #
   user@machine:~$ http http://localhost:5678/changes/pyccd-beta1/123/456
   ```
   If there are results available for the algorithm/x/y combo, return status is HTTP 200
