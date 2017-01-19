@@ -17,14 +17,14 @@ HTTP endpoint for LCMAP change detection.
    "x": 678,
    "y": 901,
    "result": "result_structure", 
-   "result_md5": "abc123",
+   "result_md5": "33caa90904b2295132d105bec3135e4c",
    "result_status": "the status", 
    "result_produced": "2017-01-01-17:57:33Z",
    "tile_update_requested": "2017-01-01-17:57:31Z",
    "tile_update_began": "2017-01-01-17:57:32Z",
    "tile_update_ended": "2017-01-01-17:57:32Z",
    "inputs_url": "http://localhost:5678/landsat/tiles?x=678&y=901&acquired=2015-01-01/2017-01-01&ubid=LANDSAT_5/TM/sr_band1&ubid=LANDSAT_5/TM/sr_band2&ubid=LANDSAT_5/TM/sr_band3&ubid=LANDSAT_5/TM/sr_band4&ubid=LANDSAT_5/TM/sr_band5&ubid=LANDSAT_5/TM/sr_band7",
-   "inputs_md5": "ADSD56HNJ8997656SSD"   
+   "inputs_md5": "189e725f4587b679740f0f7783745056"   
    }
   ```
   
