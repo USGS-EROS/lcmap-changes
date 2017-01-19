@@ -17,7 +17,7 @@ HTTP endpoint for LCMAP change detection.
     "algorithm": "pyccd-beta1",
     "x": 678,
     "y": 901,
-    "result": "{result_structure}", 
+    "result": "{algorithm-result-structure}", 
     "result_md5": "33caa90904b2295132d105bec3135e4c",
     "result_status": "the status", 
     "result_produced": "2017-01-01-17:57:33Z",
