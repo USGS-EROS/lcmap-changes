@@ -29,6 +29,7 @@ echo Version: $VERSION
 if docker login -u $DOCKER_USER -p $DOCKER_PASS; then
     echo "hub.docker.com authentication successful."
 else
+    echo "hub.docker.com authentication failure."
     exit 1
 fi
 
