@@ -32,14 +32,23 @@ HTTP endpoint for LCMAP change detection.
   If there were no results available, they are automatically scheduled for production
   and the return status is HTTP 202. A ticket is returned, which is the same structure 
   minus the ```result, result_md5, result_produced, and result_status``` fields.
-  
-  Successive calls will continue to return the ticket until a result is available.
-  ```json 
-  {}
+   ```json
+  {
+    "tile_x": 32,
+    "tile_y": 128,
+    "algorithm": "pyccd-beta1",
+    "x": 123,
+    "y": 456,
+    "tile_update_requested": "2017-01-01-17:57:31Z",
+    "tile_update_began": null,
+    "tile_update_ended": null,
+    "inputs_url": "http://localhost:5678/landsat/tiles?x=123&y=456&acquired=2015-01-01/2017-01-01&ubid=LANDSAT_5/TM/sr_band1&ubid=LANDSAT_5/TM/sr_band2&ubid=LANDSAT_5/TM/sr_band3&ubid=LANDSAT_5/TM/sr_band4&ubid=LANDSAT_5/TM/sr_band5&ubid=LANDSAT_5/TM/sr_band7", 
+   }
   ```
+  Successive calls will continue to return the ticket with HTTP 202 until a result is available.
   
-  If results are available but additional source data is available, production may be triggered
-  specifying ```?refresh=true```
+  If additional source data is available production may be rescheduled by specifying ```?refresh=true``` in the querystring.
+  Existing change results will be replaced when the tile updates complete.
   
 ### Installation:
 TBD
