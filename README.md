@@ -67,10 +67,10 @@ HTTP endpoint for LCMAP change detection.
   # {{now}} - string - ISO8601 timestamp
   # {{ubids}} - list of strings - ubids necessary for algorithm execution.
   #
-  user@machine:~$ http http://localhost:5678/changes/pyccd-beta1/123/456
+  user@machine:~$ http PUT http://localhost:5678/changes/pyccd-beta1 enabled:=true \
+                                                                     ubid_query='(tm OR etm) AND sr AND band_2' \
+                                                                     tiles_url='http://localhost:5678/landsat/tiles?x={{x}}&y={{y}}&acquired=2012-01-03-17:33:10Z/{{now}}{{#ubids}}&ubid={{.}}{{/ubids}}
   ```
-  
-  
   
 ### Installation:
 TBD
