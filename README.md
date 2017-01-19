@@ -45,13 +45,13 @@ HTTP endpoint for LCMAP change detection.
   
   Production may be rescheduled by specifying ```?refresh=true``` on the querystring.  Existing change results will be replaced once tile updates complete.
   
-  #### List available algorithms:
+#### List available algorithms:
   ```bash
   # HTTP GET hostname:port/changes/algorithms
   #
   user@machine:~$ http http://localhost:5678/changes/algorithms
   ```
-  #### Add/Update an algorithm:
+#### Add/Update an algorithm:
   ```
   # HTTP PUT hostname:port/changes/algorithm/<algorithm-name-and-version>
   # {"enabled": true|false,
