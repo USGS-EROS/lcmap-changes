@@ -11,15 +11,21 @@ HTTP endpoint for LCMAP change detection.
   If there are results available for the algorithm/x/y combo, return status is HTTP 200
   with the following response body:
   ```json
-  {"result": "result_structure", 
+  {"tile_x": 123,
+   "tile_y": 456,
+   "algorithm": "pyccd-beta1",
+   "x": 678,
+   "y": 901,
+   "result": "result_structure", 
    "result_md5": "abc123",
    "result_status": "the status", 
    "result_produced": "2017-01-01-17:57:33Z",
-   "tile_x": 123,
-   "tile_y": 456,
-   "x": 678,
-   "y": 901,
-   "algorithm": "pyccd-beta1"}
+   "tile_update_requested": "2017-01-01-17:57:31Z",
+   "tile_update_began": "2017-01-01-17:57:32Z",
+   "tile_update_ended": "2017-01-01-17:57:32Z",
+   "inputs_url": "http://localhost:5678/landsat/tiles?x=678&y=901&acquired=2015-01-01/2017-01-01&ubid=LANDSAT_5/TM/sr_band1&ubid=LANDSAT_5/TM/sr_band2&ubid=LANDSAT_5/TM/sr_band3&ubid=LANDSAT_5/TM/sr_band4&ubid=LANDSAT_5/TM/sr_band5&ubid=LANDSAT_5/TM/sr_band7",
+   "inputs_md5": "ADSD56HNJ8997656SSD"   
+   }
   ```
   
   If there were no results available, they are automatica{lly scheduled for production
