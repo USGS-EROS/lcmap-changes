@@ -12,11 +12,11 @@ HTTP endpoint for LCMAP change detection.
   with the following response body:
   ```json
   {
-    "tile_x": 123,
-    "tile_y": 456,
+    "tile_x": 32,
+    "tile_y": 128,
     "algorithm": "pyccd-beta1",
-    "x": 678,
-    "y": 901,
+    "x": 123,
+    "y": 456,
     "result": "{algorithm-result-structure}", 
     "result_md5": "33caa90904b2295132d105bec3135e4c",
     "result_status": "the status", 
