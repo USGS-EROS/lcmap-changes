@@ -2,7 +2,7 @@
 # lcmap-changes
 HTTP endpoint for LCMAP change detection.
 
-## Usage:
+### Usage:
 ```bash
   # usage for retrieving change outputs are:
   # HTTP GET hostname:port/change/<algorithm-and-version>/x/y?refresh=true|false
@@ -13,7 +13,7 @@ HTTP endpoint for LCMAP change detection.
   with the following response body:
   ```json
   {"result": "result_structure", 
-   "result_md5": abc123, 
+   "result_md5": "abc123",
    "result_status": "the status", 
    "result_produced": "2017-01-01-17:57:33Z"
    "tile_x": 123,
@@ -35,11 +35,11 @@ HTTP endpoint for LCMAP change detection.
   If results are available but additional source data is available, production may be triggered
   specifying ```?refresh=true```
   
-## Installation:
+### Installation:
 TBD
 
-## Configuration:
+### Configuration:
 TBD
 
-## Contributing:
+### Contributing:
 TBD
