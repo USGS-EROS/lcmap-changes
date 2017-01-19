@@ -3,7 +3,7 @@
 # This file is executed by Travis CI when a buid succeeds. If you
 # execute this file manually, please be sure the build runs.
 
-export REPO=usgseros/lcmap-landsat
+export REPO=usgseros/lcmap-changes
 
 # If deploying manually the TRAVIS_BRANCH will not be set, so it needs
 # to be set using a git command. Even though this script is intended
