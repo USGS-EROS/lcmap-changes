@@ -49,7 +49,7 @@ HTTP endpoint for LCMAP change detection.
   ```bash
   # HTTP GET hostname:port/changes/algorithms
   #
-  user@machine:~$ http http://localhost:5778/changes/v0/algorithms
+  user@machine:~$ http http://localhost:5778/algorithms
   HTTP/1.1 200 OK
   Content-Length: 449
   Content-Type: application/json
@@ -71,10 +71,10 @@ HTTP endpoint for LCMAP change detection.
       }
   ]
   ```
-  
+
 #### Show just one algorithm:
 ```bash
-user@machine:~$ http http://localhost:5778/changes/v0/algorithm/pyccd-beta1
+user@machine:~$ http http://localhost:5778/algorithm/pyccd-beta1
 HTTP/1.1 200 OK
 Content-Length: 222
 Content-Type: application/json
@@ -106,7 +106,7 @@ Server: Jetty(9.2.10.v20150310)
   # {{ubids}} - list of strings - ubids necessary for algorithm execution.
   #
 
-  user@machine:~$ http PUT http://localhost:5778/changes/v0/algorithm/pyccd-beta1 enabled:=true ubid_query='(tm OR etm) AND sr AND band_2' tiles_url='http://localhost:5678/landsat/tiles?x={{x}}&y={{y}}&acquired=2012-01-03-17:33:10Z/{{now}}{{#ubids}}&ubid={{.}}{{/ubids}}'
+  user@machine:~$ http PUT http://localhost:5778/algorithm/pyccd-beta1 enabled:=true ubid_query='(tm OR etm) AND sr AND band_2' tiles_url='http://localhost:5678/landsat/tiles?x={{x}}&y={{y}}&acquired=2012-01-03-17:33:10Z/{{now}}{{#ubids}}&ubid={{.}}{{/ubids}}'
   HTTP/1.1 202 Accepted
   Content-Length: 224
   Content-Type: application/json

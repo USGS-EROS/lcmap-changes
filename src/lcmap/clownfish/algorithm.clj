@@ -11,8 +11,8 @@
 
 (def schema
   {:algorithm sc/Str
-   :enabled sc/Bool
-   :ubid_query sc/Str
+   :enabled   sc/Bool
+   :ubids_url sc/Str
    :tiles_url sc/Str})
 
 (defn validate
@@ -21,7 +21,7 @@
    (sc/check schema algorithm-definition))
 
 (defn all
-  "Retreive all algorithms."
+  "Retrieve all algorithms."
   []
   (db/execute (hayt/select :algorithms)))
 
@@ -63,7 +63,7 @@
 (defn inputs [{:keys [x y algorithm] :as data}]
   "Construct url to retrieve tiles for algorithm input"
   (let [conf  (configuration data)
-        ubids (get-ubids (:ubid_query conf))
+        ubids (get-ubids (:ubids_url conf))
         now   (tc/to-string (time/now))]
     (template/render (:tiles_url conf) (merge data {:ubids ubids
                                                     :now now}))))

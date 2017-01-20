@@ -5,8 +5,10 @@
             [clojure.tools.logging :as log]
             [clojure.string :as str]
             [compojure.core :refer :all]
+            [lcmap.commons.numbers :refer [numberize]]
             [lcmap.clownfish.algorithm :as alg]
             [lcmap.clownfish.config :refer [config]]
+            [lcmap.clownfish.health :as health]
             [lcmap.clownfish.html :as html]
             [lcmap.clownfish.middleware :refer [wrap-handler]]
             [lcmap.clownfish.results :as change-results]
@@ -17,6 +19,15 @@
   (log/debug "explaining allow verbs")
   {:status 405
    :headers {"Allow" (str/join "," verbs)}})
+
+(defn check-health
+   "Indicate status of backing services."
+   []
+   (log/debugf "checking app health")
+   (let [service-status (health/health-status)]
+     (if (every? (fn [[_ {is :healthy}]] is) service-status)
+       {:status 200 :body service-status}
+       {:status 503 :body service-status})))
 
 ;;; Request entity transformers.
 (defn decode-json
@@ -74,9 +85,14 @@
 ;;; interface will be able to be described via clojure.spec.  Until then,
 ;;; be careful!
 (defn get-changes
-  [{{x :x y :y a :algorithm r :refresh :or {r false}} :params}]
-  (let [data    {:x x :y y :algorithm a :refresh (boolean r)}
+  [algorithm x y {{r :refresh :or [r false]} :params :as req}]
+  (log/tracef "get-changes :: params - %s" req)
+  (let [data    {:x (numberize x)
+                 :y (numberize y)
+                 :algorithm algorithm
+                 :refresh (boolean r)}
         results (change-results/retrieve data)]
+    (log/tracef "get-changes results: %s" results)
     (if (and results (not (nil? (:result results))) (not (:refresh data)))
       {:status 200 :body (merge data results)}
       (let [src?   (future (source-data-available? data))
@@ -89,13 +105,13 @@
 (defn get-algorithms
   "Returns all algorithms defined in the system."
   []
-  (log/tracef "Returning all algorithms...")
+  (log/tracef "get-algorithms...")
   {:status 200 :body (alg/all)})
 
 (defn get-algorithm
   "Returns an algorithm if defined in the system."
   [algorithm]
-  (log/tracef "Returning algorithm: %s..." algorithm)
+  (log/tracef "get-algorithm: %s..." algorithm)
   (let [result (alg/configuration {:algorithm algorithm})]
     (if result
       {:status 200 :body result}
@@ -104,6 +120,7 @@
 (defn put-algorithm
   "Updates or creates an algorithm definition"
   [algorithm {body :body}]
+  (log/tracef "put-algorithm: %s..." algorithm)
   (let [alg-def (merge {:algorithm algorithm} body)]
     (or (some->> (alg/validate alg-def)
                  (assoc {:status 403} :body))
@@ -115,27 +132,29 @@
   "Handlers for changes resource."
   []
   (wrap-handler
-   (context "/changes/v0" request
-     (GET "/" []
+   (context "/" request
+    (GET "/" []
           (with-meta {:status 200} {:template html/default}))
 
-     (GET "/algorithms" []
+    (ANY "/" []
+         (with-meta (allow ["GET"]) {:template html/default}))
+
+    (GET "/health" []
+          (with-meta (check-health) {:template html/status-list}))
+
+    (GET "/algorithms" []
           (with-meta (get-algorithms) {:template html/default}))
 
-     (GET "/algorithm/:algorithm{.+}" [algorithm]
+    (GET "/algorithm/:algorithm{.+}" [algorithm]
           (with-meta (get-algorithm algorithm) {:template html/default}))
 
-     (PUT "/algorithm/:algorithm{.+}" [algorithm]
-          (with-meta (put-algorithm algorithm request)
-            {:template html/default}))
+    (PUT "/algorithm/:algorithm{.+}" [algorithm]
+          (with-meta (put-algorithm algorithm request) {:template html/default}))
 
-     (GET "/:algorithm{.+}/:x{\\d.+}/:y{\\d.+}" []
-          (with-meta (get-changes request) {:template html/default}))
+    (GET "/changes/:algorithm{.+}/:x{[0-9]+}/:y{[0-9]+}" [algorithm x y]
+          (with-meta
+            (get-changes algorithm x y request) {:template html/default}))
 
-     (ANY "/" []
-          (with-meta (allow ["GET"]) {:template html/default}))
-
-     (GET "/problem/" []
+    (GET "/problem/" []
           {:status 200 :body "problem resource"}))
-
    prepare-with respond-with))

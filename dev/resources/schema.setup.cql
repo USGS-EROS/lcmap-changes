@@ -3,7 +3,7 @@ WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1};
 
 CREATE TABLE IF NOT EXISTS lcmap_changes_dev.algorithms(
     algorithm text PRIMARY KEY,
-    ubid_query text,
+    ubids_url text,
     tiles_url text,
     enabled boolean
 );
