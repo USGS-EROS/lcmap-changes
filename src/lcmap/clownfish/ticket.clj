@@ -24,12 +24,6 @@
                 {:content-type "application/json"}))
   ticket)
 
-;(defn retrieve
-;  "Retrieves existing ticket or nil."
-;  [{:keys [x y algorithm] :as data}]
-;  (dissoc (change-results/retrieve data)
-;          :result :result_md5 :result_status :result_produced)
-
 (defn create
   "Creates a new ticket for updating algorithm results.  Does not account for
    existing tickets."

@@ -89,15 +89,17 @@
 (defn get-algorithms
   "Returns all algorithms defined in the system."
   []
+  (log/tracef "Returning all algorithms...")
   {:status 200 :body (alg/all)})
 
 (defn get-algorithm
   "Returns an algorithm if defined in the system."
   [algorithm]
+  (log/tracef "Returning algorithm: %s..." algorithm)
   (let [result (alg/configuration {:algorithm algorithm})]
     (if result
-      ({:status 200 :body result})
-      ({:status 404 :body (str algorithm " not found.")}))))
+      {:status 200 :body result}
+      {:status 404 :body (str algorithm " not found.")})))
 
 (defn put-algorithm
   "Updates or creates an algorithm definition"

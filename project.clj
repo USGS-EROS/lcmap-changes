@@ -37,7 +37,8 @@
                  [gov.usgs.eros/lcmap-commons "1.0.1-SNAPSHOT"]
                  ;; needed to make indexing calls to elasticsearch
                  [http-kit "2.2.0"]
-                 [de.ubercode.clostache/clostache "1.4.0"]]
+                 [de.ubercode.clostache/clostache "1.4.0"]
+                 [listora/again "0.1.0"]]
 
   :profiles {:dev {:resource-paths ["dev" "dev/resources" "resources" "data"]
                    :dependencies [[org.clojure/tools.namespace "0.3.0-alpha3"]

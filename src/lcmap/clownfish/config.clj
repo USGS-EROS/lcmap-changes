@@ -19,6 +19,14 @@
 
 (def event {:host schema/Str
             :port schema/Num
+            :queues [{:name schema/Str
+                      :opts {schema/Keyword schema/Any}}]
+            :exchanges [{:name schema/Str
+                         :type schema/Str
+                         :opts {schema/Keyword schema/Any}}]
+            :bindings [{:exchange schema/Str
+                        :queue schema/Str
+                        :opts {schema/Keyword schema/Str}}]
             schema/Keyword schema/Str})
 
 (def database {:contact-points [schema/Str]

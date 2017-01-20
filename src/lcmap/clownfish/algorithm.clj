@@ -29,7 +29,8 @@
   "Create/Update algorithm definition"
   [algorithm]
   (db/execute (hayt/insert :algorithms
-                           (hayt/values algorithm))))
+                           (hayt/values algorithm)))
+  algorithm)
 
 (defn configuration
   "Retrieve algorithm configuration or nil"
