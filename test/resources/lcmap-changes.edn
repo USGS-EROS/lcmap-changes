@@ -1,10 +1,28 @@
 {:database  {:contact-points "localhost"
              :default-keyspace "lcmap_changes_test"}
- :event     {:host "localhost"
-             :port 5672}
- :http      {:port 5679
+ :event     {
+             :host "localhost"
+             :port 5672
+             :queues [{:name "test.lcmap.changes.server.queue"
+                       :opts {:durable true
+                              :exclusive false
+                              :auto-delete false}}
+                      {:name "test.lcmap.changes.worker.queue"
+                       :opts {:durable true
+                              :exclusive false
+                              :auto-delete false}}]
+             :exchanges [{:name "test.lcmap.changes.server.exchange"
+                          :type "topic"
+                          :opts {:durable true}}
+                         {:name "test.lcmap.changes.worker.exchange"
+                          :type "topic"
+                          :opts {:durable true}}]
+             :bindings [{:exchange "test.lcmap.changes.server.exchange"
+                         :queue "test.lcmap.changes.worker.queue"
+                         :opts {:routing-key "change-detection"}}]}
+ :http      {:port 5780
              :join? false
              :daemon? true}
- :server    {:exchange "test.lcmap.changes.server"
-             :queue "test.lcmap.changes.server"}
+ :server    {:exchange "test.lcmap.changes.server.exchange"
+             :queue    "test.lcmap.changes.server.queue"}
  :state     {:tile-specs-url "data/tile-specs.json"}}
