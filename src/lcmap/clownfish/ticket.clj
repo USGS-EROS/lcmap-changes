@@ -24,11 +24,11 @@
                 {:content-type "application/json"}))
   ticket)
 
-(defn retrieve
-  "Retrieves existing ticket or nil."
-  [{:keys [x y algorithm] :as data}]
-  (dissoc (change-results/retrieve data)
-          :result :result_md5 :result_status :result_produced))
+;(defn retrieve
+;  "Retrieves existing ticket or nil."
+;  [{:keys [x y algorithm] :as data}]
+;  (dissoc (change-results/retrieve data)
+;          :result :result_md5 :result_status :result_produced)
 
 (defn create
   "Creates a new ticket for updating algorithm results.  Does not account for
@@ -41,8 +41,6 @@
                 :x x
                 :y y
                 :tile_update_requested (str (time/now))
-                :tile_update_began nil
-                :tile_update_ended nil
                 :inputs_url (alg/inputs data)}]
     (->> ticket (announce) (hayt/values) (hayt/insert :results) (db/execute))
     ticket))
@@ -50,4 +48,4 @@
 (defn schedule
   "Schedules algorithm execution while preventing duplicates"
   [{:keys [x y algorithm] :as data}]
-  (or (retrieve data) (create data)))
+  (or (change-results/retrieve data) (create data)))

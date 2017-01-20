@@ -78,13 +78,13 @@
   (let [data    {:x x :y y :algorithm a :refresh (boolean r)}
         results (change-results/retrieve data)]
     (if (and results (not (nil? (:result results))) (not (:refresh data)))
-      {:status 200 :body (merge data {:changes results})}
+      {:status 200 :body (merge data results)}
       (let [src?   (future (source-data-available? data))
             alg?   (alg/available? data)
             valid? {:algorithm-available alg? :source-data-available? @src?}]
         (if (not-every? true? (vals valid?))
           {:status 422 :body (merge data valid?)}
-          {:status 202 :body (merge data {:ticket (ticket/schedule data)})})))))
+          {:status 202 :body (merge data valid? (ticket/schedule data))})))))
 
 (defn get-algorithms
   "Returns all algorithms defined in the system."
