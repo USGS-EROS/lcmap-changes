@@ -95,8 +95,8 @@
            configs))
 
 (defstate bindings
-  :start (let [exchanges_state exchanges
-               queues_state    queues
+  :start (let [exchanges-state exchanges
+               queues-state    queues
                configs         (get-in config [:event :bindings])]
            (doseq [binder configs]
              (log/debugf "Binding %s to %s with opts %s"

@@ -60,9 +60,9 @@
 
   See also `db-session`."
   []
-  (let [db-cfg (:database config)]
+  (let [db-cfg (get-in config [:database :cluster])]
     (log/debugf "starting db with: %s" db-cfg)
-    (apply alia/cluster (select-keys db-cfg [:contact-points]))))
+    (apply alia/cluster db)))
 
 (defn db-cluster-stop
   "Shutdown cluster connection."
