@@ -2,7 +2,7 @@
 # lcmap-changes
 HTTP endpoint for LCMAP change detection.
 
-### Usage:
+### Usage
 #### Get Change Results
 ```bash
   # HTTP GET hostname:port/change/<algorithm-and-version>/x/y?refresh=true|false
@@ -45,7 +45,7 @@ HTTP endpoint for LCMAP change detection.
 
   Production may be rescheduled by specifying ```?refresh=true``` on the querystring.  Existing change results will be replaced once tile updates complete.
 
-#### List available algorithms:
+#### List available algorithms
   ```bash
   # HTTP GET hostname:port/changes/algorithms
   #
@@ -72,7 +72,7 @@ HTTP endpoint for LCMAP change detection.
   ]
   ```
 
-#### Show just one algorithm:
+#### Show just one algorithm
 ```bash
 user@machine:~$ http http://localhost:5778/algorithm/pyccd-beta1
 HTTP/1.1 200 OK
@@ -89,7 +89,7 @@ Server: Jetty(9.2.10.v20150310)
 }
 ```
 
-#### Add/Update an algorithm:
+#### Add/Update an algorithm
   ```bash
   # HTTP PUT hostname:port/changes/algorithm/<algorithm-name-and-version>
   # {
@@ -121,14 +121,14 @@ Server: Jetty(9.2.10.v20150310)
   }
   ```
 
-### Installation:
+### Installation
 TBD
 
-### Configuration:
+### Configuration
 TBD
 
-### Integrating With:
+### Integrating With
 Document message exchanges across AMQP here.
 
-### Contributing:
+### Contributing
 TBD
