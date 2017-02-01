@@ -21,7 +21,7 @@
         payload (json/encode ticket)]
     (log/debugf "publish '%s' ticket: %s" routing payload)
     (lb/publish amqp-channel exchange routing payload
-                {:content-type "application/json"}))
+                {:content-type "application/json" :persistent true}))
   ticket)
 
 (defn create
