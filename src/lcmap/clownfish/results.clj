@@ -24,7 +24,7 @@
         change-result {:tile_x tile_x
                        :tile_y tile_y
                        :x x
-                       :y y 
+                       :y y
                        :algorithm algorithm
                        :result result
                        :result_md5 result_md5

@@ -153,8 +153,6 @@
 
     (GET "/changes/:algorithm{.+}/:x{[0-9]+}/:y{[0-9]+}" [algorithm x y]
           (with-meta
-            (get-changes algorithm x y request) {:template html/default}))
+            (get-changes algorithm x y request) {:template html/default})))
 
-    (GET "/problem/" []
-          {:status 200 :body "problem resource"}))
    prepare-with respond-with))
