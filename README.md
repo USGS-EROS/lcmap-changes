@@ -45,47 +45,60 @@ HTTP endpoint for LCMAP change detection.
 
   Production may be rescheduled by specifying ```?refresh=true``` on the querystring.  Existing change results will be replaced once tile updates complete.
 
+  If the request could not be fulfilled, HTTP 422 is returned with an explanation.
+  ```bash
+  user@machine:~$ http GET http://localhost:5778/changes/pyccd-beta1/123/456
+
+  HTTP/1.1 422 Unprocessable Entity
+  Content-Length: 117
+  Content-Type: application/json
+  Date: Wed, 01 Feb 2017 21:05:59 GMT
+  Server: Jetty(9.2.10.v20150310)
+
+  {
+      "algorithm": "pyccd-beta1",
+      "algorithm-available": false,
+      "refresh": false,
+      "source-data-available?": true,
+      "x": 123,
+      "y": 456
+  }
+  ```
+
+
 #### List available algorithms
   ```bash
   # HTTP GET hostname:port/changes/algorithms
   #
   user@machine:~$ http GET http://localhost:5778/algorithms
-  HTTP/1.1 200 OK
-  Content-Length: 449
-  Content-Type: application/json
-  Date: Fri, 20 Jan 2017 03:55:20 GMT
-  Server: Jetty(9.2.10.v20150310)
+HTTP/1.1 200 OK
+Content-Length: 212
+Content-Type: application/json
+Date: Wed, 01 Feb 2017 21:20:39 GMT
+Server: Jetty(9.2.10.v20150310)
 
-  [
-      {
-          "algorithm": "pyccd-beta221",
-          "enabled": true,
-          "tiles_url": "http://localhost:5678/landsat/tiles?x={{x}}&y={{y}}&acquired=2012-01-03-17:33:10Z/{{now}}{{#ubids}}&ubid={{.}}{{/ubids}}",
-          "ubid_query": "(tm OR etm) AND sr AND band_2"
-      },
-      {
-          "algorithm": "pyccd-beta1",
-          "enabled": true,
-          "tiles_url": "http://localhost:5678/landsat/tiles?x={{x}}&y={{y}}&acquired=2012-01-03-17:33:10Z/{{now}}{{#ubids}}&ubid={{.}}{{/ubids}}",
-          "ubid_query": "(tm OR etm) AND sr AND band_2"
-      }
-  ]
+[
+    {
+        "algorithm": "pyccd-beta1",
+        "enabled": true,
+        "inputs_url_template": "http://localhost:5678/landsat/tiles?x={{x}}&y={{y}}&acquired=2012-01-03-17:33:10Z/{{now}}&ubid=LANDSAT_5/TM/sr_band1&ubid=LANDSAT_5/TM/sr_band2"
+    }
+]
   ```
 
 #### Show just one algorithm
 ```bash
-user@machine:~$ http GET http://localhost:5778/algorithm/pyccd-beta1
+user@machine:~$  http GET http://localhost:5778/algorithm/pyccd-beta1
 HTTP/1.1 200 OK
-Content-Length: 222
+Content-Length: 210
 Content-Type: application/json
-Date: Fri, 20 Jan 2017 03:57:51 GMT
+Date: Wed, 01 Feb 2017 21:19:44 GMT
 Server: Jetty(9.2.10.v20150310)
 
 {
     "algorithm": "pyccd-beta1",
     "enabled": true,
-    "tiles_url": "http://localhost:5678/landsat/tiles?x={{x}}&y={{y}}&acquired=2012-01-03-17:33:10Z/{{now}}{{#ubids}}&ubid={{.}}{{/ubids}}",
-    "ubid_query": "(tm OR etm) AND sr AND band_2"
+    "inputs_url_template": "http://localhost:5678/landsat/tiles?x={{x}}&y={{y}}&acquired=2012-01-03-17:33:10Z/{{now}}&ubid=LANDSAT_5/TM/sr_band1&ubid=LANDSAT_5/TM/sr_band2"
 }
 ```
 
@@ -103,21 +116,20 @@ Server: Jetty(9.2.10.v20150310)
   # {{y}} = integer - requested y coordinate
   # {{algorithm}} = string - requested algorithm and version
   # {{now}} - string - ISO8601 timestamp
-  # {{ubids}} - list of strings - ubids necessary for algorithm execution.
   #
 
-  user@machine:~$ http PUT http://localhost:5778/algorithm/pyccd-beta1 enabled:=true ubid_query='(tm OR etm) AND sr AND band_2' tiles_url='http://localhost:5678/landsat/tiles?x={{x}}&y={{y}}&acquired=2012-01-03-17:33:10Z/{{now}}{{#ubids}}&ubid={{.}}{{/ubids}}'
-  HTTP/1.1 202 Accepted
-  Content-Length: 224
+  user@machine:~$ http PUT http://localhost:5778/algorithm/pyccd-beta1
+                       enabled:=true  inputs_url_template='http://localhost:5678/landsat/tiles?x={{x}}&y={{y}}&acquired=2012-01-03-17:33:10/{{now}}&ubid=LANDSAT_5/TM/sr_band1&ubid=LANDSAT_5/TM/sr_band2'
+
+  Content-Length: 210
   Content-Type: application/json
-  Date: Fri, 20 Jan 2017 03:49:26 GMT
+  Date: Wed, 01 Feb 2017 21:15:09 GMT
   Server: Jetty(9.2.10.v20150310)
 
   {
       "algorithm": "pyccd-beta1",
       "enabled": true,
-      "tiles_url": "http://localhost:5678/landsat/tiles?x={{x}}&y={{y}}&acquired=2012-01-03-17:33:10Z/{{now}}{{#ubids}}&ubid={{.}}{{/ubids}}",
-      "ubid_query": "(tm OR etm) AND sr AND band_2"
+      "inputs_url_template": "http://localhost:5678/landsat/tiles?x={{x}}&y={{y}}&acquired=2012-01-03-17:33:10Z/{{now}}&ubid=LANDSAT_5/TM/sr_band1&ubid=LANDSAT_5/TM/sr_band2"
   }
   ```
 

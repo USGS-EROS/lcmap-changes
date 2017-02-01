@@ -23,7 +23,6 @@
             [ring.middleware.accept :refer [wrap-accept]]
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
             [ring.middleware.params :refer [wrap-params]]
-            [ring.middleware.problem :refer [wrap-problem]]
             [ring.middleware.resource :refer [wrap-resource]])
 
   (:import [org.joda.time.DateTime]

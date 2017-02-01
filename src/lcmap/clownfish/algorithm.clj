@@ -12,8 +12,7 @@
 (def schema
   {:algorithm sc/Str
    :enabled   sc/Bool
-   :ubids_url sc/Str
-   :tiles_url sc/Str})
+   :inputs_url_template sc/Str})
 
 (defn validate
    "Produce a map of errors if the algorithm is invalid, otherwise nil."
