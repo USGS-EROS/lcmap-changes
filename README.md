@@ -7,7 +7,7 @@ HTTP endpoint for LCMAP change detection.
 ```bash
   # HTTP GET hostname:port/change/<algorithm-and-version>/x/y?refresh=true|false
   #
-  user@machine:~$ http http://localhost:5678/changes/pyccd-beta1/123/456
+  user@machine:~$ http GET http://localhost:5678/changes/pyccd-beta1/123/456
   ```
   If there are results available the return status is HTTP 200 with the following response body:
   ```json
@@ -49,7 +49,7 @@ HTTP endpoint for LCMAP change detection.
   ```bash
   # HTTP GET hostname:port/changes/algorithms
   #
-  user@machine:~$ http http://localhost:5778/algorithms
+  user@machine:~$ http GET http://localhost:5778/algorithms
   HTTP/1.1 200 OK
   Content-Length: 449
   Content-Type: application/json
@@ -74,7 +74,7 @@ HTTP endpoint for LCMAP change detection.
 
 #### Show just one algorithm
 ```bash
-user@machine:~$ http http://localhost:5778/algorithm/pyccd-beta1
+user@machine:~$ http GET http://localhost:5778/algorithm/pyccd-beta1
 HTTP/1.1 200 OK
 Content-Length: 222
 Content-Type: application/json
