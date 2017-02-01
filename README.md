@@ -5,7 +5,7 @@ HTTP endpoint for LCMAP change detection.
 ### Usage
 #### Get Change Results
 ```bash
-  # HTTP GET hostname:port/change/<algorithm-and-version>/x/y?refresh=true|false
+  # HTTP GET hostname:port/<algorithm-and-version>/x/y?refresh=true|false
   #
   user@machine:~$ http GET http://localhost:5678/changes/pyccd-beta1/123/456
   ```
