@@ -1,28 +1,31 @@
-{:database  {:contact-points "localhost"
+{:database  {:cluster {:contact-points "localhost"}
              :default-keyspace "lcmap_changes_test"}
  :event     {
              :host "localhost"
              :port 5672
-             :queues [{:name "test.lcmap.changes.server.queue"
+             :queues [{:name "test.lcmap.changes.server"
                        :opts {:durable true
                               :exclusive false
                               :auto-delete false}}
-                      {:name "test.lcmap.changes.worker.queue"
+                      {:name "test.lcmap.changes.worker"
                        :opts {:durable true
                               :exclusive false
                               :auto-delete false}}]
-             :exchanges [{:name "test.lcmap.changes.server.exchange"
+             :exchanges [{:name "test.lcmap.changes.server"
                           :type "topic"
                           :opts {:durable true}}
-                         {:name "test.lcmap.changes.worker.exchange"
+                         {:name "test.lcmap.changes.worker"
                           :type "topic"
                           :opts {:durable true}}]
-             :bindings [{:exchange "test.lcmap.changes.server.exchange"
-                         :queue "test.lcmap.changes.worker.queue"
+             :bindings [{:exchange "test.lcmap.changes.server"
+                         :queue "test.lcmap.changes.server"
+                         :opts {:routing-key "change-detection"}}
+                        {:exchange "test.lcmap.changes.worker"
+                         :queue "test.lcmap.changes.worker"
                          :opts {:routing-key "change-detection"}}]}
  :http      {:port 5780
              :join? false
              :daemon? true}
- :server    {:exchange "test.lcmap.changes.server.exchange"
-             :queue    "test.lcmap.changes.server.queue"}
+ :server    {:exchange "test.lcmap.changes.worker"
+             :queue    "test.lcmap.changes.server"}
  :state     {:tile-specs-url "data/tile-specs.json"}}

@@ -3,29 +3,29 @@
  :event     {
              :host "localhost"
              :port 5672
-             :queues [{:name "dev.lcmap.changes.server.queue"
+             :queues [{:name "dev.lcmap.changes.server"
                        :opts {:durable true
                               :exclusive false
                               :auto-delete false}}
-                      {:name "dev.lcmap.changes.worker.queue"
+                      {:name "dev.lcmap.changes.worker"
                        :opts {:durable true
                               :exclusive false
                               :auto-delete false}}]
-             :exchanges [{:name "dev.lcmap.changes.server.exchange"
+             :exchanges [{:name "dev.lcmap.changes.server"
                           :type "topic"
                           :opts {:durable true}}
-                         {:name "dev.lcmap.changes.worker.exchange"
+                         {:name "dev.lcmap.changes.worker"
                           :type "topic"
                           :opts {:durable true}}]
-             :bindings [{:exchange "dev.lcmap.changes.server.exchange"
-                         :queue "dev.lcmap.changes.server.queue"
+             :bindings [{:exchange "dev.lcmap.changes.server"
+                         :queue "dev.lcmap.changes.server"
                          :opts {:routing-key "change-detection"}}
-                        {:exchange "dev.lcmap.changes.worker.exchange"
-                         :queue "dev.lcmap.changes.worker.queue"
+                        {:exchange "dev.lcmap.changes.worker"
+                         :queue "dev.lcmap.changes.worker"
                          :opts {:routing-key "change-detection"}}]}
  :http       {:port 5778
               :join? false
               :daemon? true}
- :server     {:exchange "dev.lcmap.changes.worker.exchange"
-              :queue "dev.lcmap.changes.server.queue"}
+ :server     {:exchange "dev.lcmap.changes.worker"
+              :queue "dev.lcmap.changes.server"}
  :state      {:tile-specs-url "data/tile-specs.json"}}
