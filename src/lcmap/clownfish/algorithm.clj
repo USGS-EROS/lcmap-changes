@@ -45,25 +45,17 @@
   [{:keys [algorithm] :as data}]
   (true? (:enabled (configuration data))))
 
-(def get-ubids
-  "Returns a sequence of ubids from supplied location."
-  (memoize (fn [location]
-             (log/debug "Loading ubids from: " location)
-             (json/decode (slurp location)))))
-
 ;;;  :tile_url can be templated using Mustache syntax >= 1.0: {{target}}
 ;;;
 ;;;  Example:
 ;;; "http://host:5678/landsat/tiles
-;;; ?x={{x}}&y={{y}}&acquired=2015-01-01/{{now}}{{#ubids}}&ubid={{.}}{{/ubids}}"
+;;; ?x={{x}}&y={{y}}&acquired=2015-01-01/{{now}}&ubid="ubid1"&ubid="ubid2"
 ;;;
 ;;; Becomes:
-;;; http://host:5678/landsat/tiles/x/y/acquired=2015-01-01/2017-01-18&ubids="ubid"
+;;; http://host:5678/landsat/tiles?x=x&y=y&acquired=2015-01-01/2017-01-18&ubid="ubid1"&ubid="ubid2"
 ;;;
 (defn inputs [{:keys [x y algorithm] :as data}]
   "Construct url to retrieve tiles for algorithm input"
   (let [conf  (configuration data)
-        ubids (get-ubids (:ubids_url conf))
         now   (tc/to-string (time/now))]
-    (template/render (:tiles_url conf) (merge data {:ubids ubids
-                                                    :now now}))))
+    (template/render (:inputs_url_template conf) (merge data {:now now}))))
