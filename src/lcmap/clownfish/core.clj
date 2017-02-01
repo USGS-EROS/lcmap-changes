@@ -10,7 +10,8 @@
   See also:
   * `dev/lcmap/clownfish/dev.clj` for REPL-driven development.
   * `dev/resources/lcmap-landsat.edn` for configuration."
-  (:require [mount.core :refer [defstate] :as mount]
+  (:require [again.core :as again]
+            [mount.core :refer [defstate] :as mount]
             [clojure.edn :as edn]
             [clojure.tools.logging :as log]
             [lcmap.clownfish.config :as config])
@@ -32,12 +33,25 @@
        (clojure.string/join " ")
        (clojure.edn/read-string)))
 
+(def retry-strategy (again/max-retries 10 (again/constant-strategy 5000)))
+
 (defn -main
-  "Start the server."
+  "Start the server"
   [& args]
   (let [cfg (args->cfg args)]
     (log/debugf "cfg: '%s'" cfg)
     (when (get-in cfg [:server])
       (log/info "HTTP server mode enabled")
       (require 'lcmap.clownfish.server))
-    (mount/start (mount/with-args {:config cfg}))))
+
+    ;;; Retry and try catch are to wait for system resources to become
+    ;;; available.
+    (try
+      (again/with-retries retry-strategy
+        (do (log/info "Stopping mount components")
+            (mount/stop)
+            (log/info "Starting mount components...")
+            (mount/start (mount/with-args {:config cfg}))))
+      (catch Exception e
+        (log/fatalf e "Could not start lcmap-changes... exiting")
+        (System/exit 1)))))

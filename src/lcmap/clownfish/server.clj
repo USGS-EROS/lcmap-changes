@@ -7,14 +7,17 @@
             [cheshire.generate :as json-gen :refer [add-encoder]]
             [compojure.core :refer :all]
             [clojure.tools.logging :as log]
-            [langohr.exchange :as le]
-            [langohr.queue :as lq]
+            [langohr.basic :as lb]
+            [langohr.consumers :as lcons]
             [lcmap.clownfish.config :refer [config]]
             [lcmap.clownfish.db :as db :refer [db-session]]
             [lcmap.clownfish.event :as event :refer [amqp-channel]]
-            [lcmap.clownfish.middleware :refer [wrap-authenticate wrap-authorize]]
-            [lcmap.clownfish.problem :as problem]
+            [lcmap.clownfish.middleware :refer [wrap-authenticate
+                                                wrap-authorize
+                                                wrap-exception
+                                                wrap-request-debug]]
             [lcmap.clownfish.changes :as changes]
+            [lcmap.clownfish.results :as results]
             [mount.core :refer [defstate] :as mount]
             [ring.adapter.jetty :refer [run-jetty]]
             [ring.middleware.accept :refer [wrap-accept]]
@@ -26,7 +29,7 @@
   (:import [org.joda.time.DateTime]
            [org.apache.commons.codec.binary Base64]))
 
-;;; This is the REST API entrypoint. All general middleware
+;;; This is the REST API & AMQP listner entrypoint. All general middleware
 ;;; should be added here. Subordinate resources should be
 ;;; defined in other namespaces.
 
@@ -41,7 +44,9 @@
       (wrap-authenticate)
       (wrap-keyword-params)
       (wrap-params)
-      (wrap-problem problem/transformer)))
+      (wrap-request-debug)
+      (wrap-exception)))
+
 
 ;;; Server-related state
 
@@ -58,28 +63,31 @@
            (log/debugf "stopping Jetty")
            (.stop server)))
 
-;; The exchange to which the server publishes messages. This
-;; is used to indirectly notify the worker of events that will
-;; result in processing data.
 
-(defstate server-exchange
-  :start (let [exchange-name (get-in config [:server :exchange])]
-           (log/debugf "creating server exchange: %s" exchange-name)
-           (le/declare amqp-channel exchange-name "topic" {:durable true})))
+(defn handle-delivery
+ [ch metadata payload]
+ (let [change-result (event/decode-message metadata payload)]
+   (log/debugf "deliver: %s" metadata)
+   (log/debugf "content: %s" change-result)
+   (results/save change-result)
+   (lb/ack event/amqp-channel (metadata :delivery-tag))))
 
-;; The queue from which the server might eventually consume
-;; messages. There are currently no bindings or consumers,
-;; this is really just a placeholder.
+(defn handle-consume
+ [consumer-tag]
+ (log/debugf "consume ok: %s" consumer-tag))
 
-(defstate server-queue
-  :start (let [queue-name (get-in config [:server :queue])]
-           (log/debugf "creating server queue: %s" queue-name)
-           (lq/declare event/amqp-channel queue-name {:durable true
-                                                      :exclusive false
-                                                      :auto-delete false})))
+(defstate listener
+ :start (let [f {:handle-delivery-fn handle-delivery
+                 :handle-consume-ok-fn handle-consume}
+              queue (get-in config [:server :queue])
+              listener-fn (lcons/create-default event/amqp-channel f)]
+          (log/debugf "starting listener: %s" queue)
+          (lb/consume event/amqp-channel queue listener-fn))
+ :stop  (let []
+          (log/debug "stopping listener: %s" listener)
+          (lb/cancel event/amqp-channel listener)))
 
 ;; Encoders; turn objects into strings suitable for JSON responses.
-
 (defn iso8601-encoder
   "Transform a Joda DateTime object into an ISO8601 string."
   [date-time generator]
@@ -95,5 +103,4 @@
     (.writeString generator (Base64/encodeBase64String copy))))
 
 (json-gen/add-encoder org.joda.time.DateTime iso8601-encoder)
-
 (json-gen/add-encoder java.nio.HeapByteBuffer base64-encoder)

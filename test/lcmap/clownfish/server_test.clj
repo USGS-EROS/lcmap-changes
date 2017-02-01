@@ -9,10 +9,10 @@
 (deftest changes-tests
   (with-system
     (testing "entry-point"
-      (let [resp (req :get "http://localhost:5679/changes")]
+      (let [resp (req :get "http://localhost:5780")]
         (is (= 200 (:status resp)))))
     (testing "search for an unsupported type still returns JSON"
-      (let [resp (req :get "http://localhost:5679/changes"
+      (let [resp (req :get "http://localhost:5780"
                       :headers {"Accept" "application/foo"})]
         (is (= 200 (:status resp)))
         (is (= "application/json" (get-in resp [:headers :content-type])))))))
@@ -20,6 +20,6 @@
 (deftest changes-health-resource
   (with-system
     (testing "health check"
-      (let [resp (req :get "http://localhost:5679/changes/health"
+      (let [resp (req :get "http://localhost:5780/health"
                             :headers {"Accept" "*/*"})]
         (is (= 200 (:status resp)))))))

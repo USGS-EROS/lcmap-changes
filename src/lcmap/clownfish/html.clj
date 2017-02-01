@@ -28,6 +28,15 @@
   []
   identity)
 
+(html/deftemplate status-list "public/status.html"
+  [services]
+  [:nav] (html/content (nav))
+  [:tbody :tr] (html/clone-for [[svc-name status] services]
+                               [:.healthy] (html/content (-> status :healthy str))
+                               [:.service] (html/content (name svc-name))
+                               [:.message] (html/content (-> status :message str))))
+
+
 (html/deftemplate default "public/application.html"
   [entity]
   [:nav] (html/content (nav))

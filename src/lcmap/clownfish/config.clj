@@ -19,9 +19,23 @@
 
 (def event {:host schema/Str
             :port schema/Num
+            :queues [{:name schema/Str
+                      :opts {schema/Keyword schema/Any}}]
+            :exchanges [{:name schema/Str
+                         :type schema/Str
+                         :opts {schema/Keyword schema/Any}}]
+            :bindings [{:exchange schema/Str
+                        :queue schema/Str
+                        :opts {schema/Keyword schema/Str}}]
             schema/Keyword schema/Str})
 
-(def database {:contact-points [schema/Str]
+;;; For full db cluster config reference,
+;;; see https://github.com/mpenet/alia/blob/master/docs/guide.md
+;;; Holding off describing all options as alia should validate
+;;; it's own config.  If this is still necessary, consider waiting
+;;; for clojure 1.9 with clojure.spec.
+(def database {:cluster {:contact-points [schema/Str]
+                         schema/Keyword schema/Any}
                :default-keyspace schema/Str})
 
 (def server {:exchange schema/Str
