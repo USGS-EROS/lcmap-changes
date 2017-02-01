@@ -97,7 +97,7 @@
       {:status 200 :body (merge data results)}
       (let [src?   (future (source-data-available? data))
             alg?   (alg/available? data)
-            valid? {:algorithm-available alg? :source-data-available? @src?}]
+            valid? {:algorithm-available alg? :source-data-available @src?}]
         (if (not-every? true? (vals valid?))
           {:status 422 :body (merge data valid?)}
           {:status 202 :body (merge data valid? (ticket/schedule data))})))))

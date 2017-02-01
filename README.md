@@ -59,7 +59,7 @@ HTTP endpoint for LCMAP change detection.
       "algorithm": "pyccd-beta1",
       "algorithm-available": false,
       "refresh": false,
-      "source-data-available?": true,
+      "source-data-available": true,
       "x": 123,
       "y": 456
   }
