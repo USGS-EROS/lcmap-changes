@@ -127,5 +127,8 @@ TBD
 ### Configuration:
 TBD
 
+### Integrating With:
+Document message exchanges across AMQP here.
+
 ### Contributing:
 TBD
