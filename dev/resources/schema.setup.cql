@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS lcmap_changes_local.results(
     y int,
     result text,
     result_md5 text,
-    result_status text,
+    result_ok boolean,
     result_produced timestamp,
     tile_update_requested timestamp STATIC,
     tile_update_began timestamp STATIC,

@@ -23,7 +23,7 @@
 
 (defn save
   "Saves algorithm results"
-  [{:keys [x y algorithm result result_md5 result_status result_produced] :as data}]
+  [{:keys [x y algorithm result result_md5 result_ok result_produced] :as data}]
   (let [[tile_x, tile_y] (snap x y (first tile-specs))
         change-result {:tile_x tile_x
                        :tile_y tile_y
@@ -32,7 +32,7 @@
                        :algorithm algorithm
                        :result result
                        :result_md5 result_md5
-                       :result_status result_status
+                       :result_ok result_ok
                        :result_produced result_produced}]
       (db/execute (hayt/insert :results (hayt/values change-result)))
 
