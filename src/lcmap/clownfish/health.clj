@@ -1,5 +1,6 @@
 (ns lcmap.clownfish.health
-  (:require [metrics.health.core :as h]
+  (:require [clojure.tools.logging :as log]
+            [metrics.health.core :as h]
             [metrics.counters :as counters]
             [metrics.timers :as timers]
             [lcmap.clownfish.db :as db]
@@ -32,3 +33,12 @@
                        [:message :healthy :error])
    :search (select-keys (bean (h/check es-health))
                        [:message :healthy :error])})
+
+(defn check-health
+  "Indicate status of backing services."
+  []
+  (log/debugf "checking app health")
+  (let [service-status (health-status)]
+    (if (every? (fn [[_ {is :healthy}]] is) service-status)
+      {:status 200 :body service-status}
+      {:status 503 :body service-status})))

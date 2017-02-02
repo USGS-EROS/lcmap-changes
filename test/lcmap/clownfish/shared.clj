@@ -6,6 +6,12 @@
             [mount.core :as mount]
             [org.httpkit.client :as http]))
 
+(def http-port (-> (slurp "test/resources/lcmap-changes.edn")
+                   (edn/read-string)
+                   (get-in [:http :port])))
+
+(def http-host (str "http://localhost:" http-port))
+
 (defmacro with-system
   "Start and stop the system, useful for integration tests."
   [& body]

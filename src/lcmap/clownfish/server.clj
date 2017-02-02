@@ -16,7 +16,7 @@
                                                 wrap-authorize
                                                 wrap-exception
                                                 wrap-request-debug]]
-            [lcmap.clownfish.changes :as changes]
+            [lcmap.clownfish.endpoints :as endpoints]
             [lcmap.clownfish.results :as results]
             [mount.core :refer [defstate] :as mount]
             [ring.adapter.jetty :refer [run-jetty]]
@@ -36,7 +36,7 @@
   "Build a middleware wrapped handler for app. This approach makes
   dependencies (components) available to handling functions."
   []
-  (-> (changes/resource)
+  (-> (endpoints/resource)
       (wrap-resource "public")
       (wrap-accept)
       (wrap-authorize)

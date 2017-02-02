@@ -1,1 +1,1 @@
-TRUNCATE TABLE lcmap_changes_test.results;
+TRUNCATE TABLE lcmap_changes_unit.results;

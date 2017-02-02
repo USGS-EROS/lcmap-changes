@@ -1,31 +1,31 @@
 {:database  {:cluster {:contact-points "localhost"}
-             :default-keyspace "lcmap_changes_test"}
+             :default-keyspace "lcmap_changes_unit"}
  :event     {
              :host "localhost"
              :port 5672
-             :queues [{:name "test.lcmap.changes.server"
+             :queues [{:name "unit.lcmap.changes.server"
                        :opts {:durable true
                               :exclusive false
                               :auto-delete false}}
-                      {:name "test.lcmap.changes.worker"
+                      {:name "unit.lcmap.changes.worker"
                        :opts {:durable true
                               :exclusive false
                               :auto-delete false}}]
-             :exchanges [{:name "test.lcmap.changes.server"
+             :exchanges [{:name "unit.lcmap.changes.server"
                           :type "topic"
                           :opts {:durable true}}
-                         {:name "test.lcmap.changes.worker"
+                         {:name "unit.lcmap.changes.worker"
                           :type "topic"
                           :opts {:durable true}}]
-             :bindings [{:exchange "test.lcmap.changes.server"
-                         :queue "test.lcmap.changes.server"
+             :bindings [{:exchange "unit.lcmap.changes.server"
+                         :queue "unit.lcmap.changes.server"
                          :opts {:routing-key "change-detection"}}
-                        {:exchange "test.lcmap.changes.worker"
-                         :queue "test.lcmap.changes.worker"
+                        {:exchange "unit.lcmap.changes.worker"
+                         :queue "unit.lcmap.changes.worker"
                          :opts {:routing-key "change-detection"}}]}
  :http      {:port 5780
              :join? false
              :daemon? true}
- :server    {:exchange "test.lcmap.changes.worker"
-             :queue    "test.lcmap.changes.server"}
+ :server    {:exchange "unit.lcmap.changes.worker"
+             :queue    "unit.lcmap.changes.server"}
  :state     {:tile-specs-url "data/tile-specs.json"}}

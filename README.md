@@ -7,7 +7,7 @@ HTTP endpoint for LCMAP change detection.
 ```bash
   # HTTP GET hostname:port/<algorithm-and-version>/x/y?refresh=true|false
   #
-  user@machine:~$ http GET http://localhost:5778/changes/pyccd-beta1/123/456
+  user@machine:~$ http GET http://localhost:5778/results/pyccd-beta1/123/456
   ```
   If there are results available the return status is HTTP 200 with the following response body:
   ```json
@@ -47,7 +47,7 @@ HTTP endpoint for LCMAP change detection.
 
   If the request could not be fulfilled, HTTP 422 is returned with an explanation.
   ```bash
-  user@machine:~$ http GET http://localhost:5778/changes/pyccd-beta1/123/456
+  user@machine:~$ http GET http://localhost:5778/results/pyccd-beta1/123/456
 
   HTTP/1.1 422 Unprocessable Entity
   Content-Length: 117
@@ -70,7 +70,7 @@ HTTP endpoint for LCMAP change detection.
   ```bash
   # HTTP GET hostname:port/changes/algorithms
   #
-  user@machine:~$ http GET http://localhost:5778/algorithms
+user@machine:~$ http GET http://localhost:5778/algorithms
 HTTP/1.1 200 OK
 Content-Length: 212
 Content-Type: application/json

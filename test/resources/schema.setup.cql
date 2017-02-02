@@ -1,13 +1,13 @@
-CREATE KEYSPACE IF NOT EXISTS lcmap_changes_test
+CREATE KEYSPACE IF NOT EXISTS lcmap_changes_unit
 WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1};
 
-CREATE TABLE IF NOT EXISTS lcmap_changes_test.algorithms(
+CREATE TABLE IF NOT EXISTS lcmap_changes_unit.algorithms(
     algorithm text PRIMARY KEY,
     inputs_url_template text,
     enabled boolean
 );
 
-CREATE TABLE IF NOT EXISTS lcmap_changes_test.results(
+CREATE TABLE IF NOT EXISTS lcmap_changes_unit.results(
     tile_x int,
     tile_y int,
     algorithm text,

@@ -1,6 +1,10 @@
 (ns lcmap.clownfish.results
-  (:require [lcmap.clownfish.db :as db]
+  (:require [clojure.tools.logging :as log]
+            [lcmap.clownfish.db :as db]
+            [lcmap.clownfish.algorithm :as alg]
             [lcmap.clownfish.state :refer [tile-specs]]
+            [lcmap.clownfish.ticket :as ticket]
+            [lcmap.commons.numbers :refer [numberize]]
             [lcmap.commons.tile :refer [snap]]
             [qbits.hayt :as hayt]))
 
@@ -33,3 +37,32 @@
       (db/execute (hayt/insert :results (hayt/values change-result)))
 
     change-result))
+
+;;; TODO - replace with implementation
+(defn source-data-available?
+  [{:keys [x y]}]
+  true)
+
+(defn schedule
+  "Schedules algorithm execution while preventing duplicates"
+  [{:keys [x y algorithm] :as data}]
+  (or (retrieve data) (ticket/create data)))
+
+(defn get-results
+  "HTTP request handler to get algorithm results"
+  [algorithm x y {{r :refresh :or [r false]} :params :as req}]
+  (log/tracef "get-changes :: params - %s" req)
+  (let [data    {:x (numberize x)
+                 :y (numberize y)
+                 :algorithm algorithm
+                 :refresh (boolean r)}
+        results (retrieve data)]
+    (log/tracef "get-changes results: %s" results)
+    (if (and results (not (nil? (:result results))) (not (:refresh data)))
+      {:status 200 :body (merge data results)}
+      (let [src?   (future (source-data-available? data))
+            alg?   (alg/available? data)
+            valid? {:algorithm-available alg? :source-data-available @src?}]
+        (if (not-every? true? (vals valid?))
+          {:status 422 :body (merge data valid?)}
+          {:status 202 :body (merge data valid? (schedule data))})))))

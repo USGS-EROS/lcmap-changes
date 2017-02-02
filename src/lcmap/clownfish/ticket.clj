@@ -8,7 +8,6 @@
             [lcmap.clownfish.config :refer [config]]
             [lcmap.clownfish.db :as db]
             [lcmap.clownfish.event :refer [amqp-channel]]
-            [lcmap.clownfish.results :as change-results]
             [lcmap.clownfish.state :refer [tile-specs]]
             [lcmap.commons.tile :refer [snap]]
             [qbits.hayt :as hayt]))
@@ -38,8 +37,3 @@
                 :inputs_url (alg/inputs data)}]
     (->> ticket (announce) (hayt/values) (hayt/insert :results) (db/execute))
     ticket))
-
-(defn schedule
-  "Schedules algorithm execution while preventing duplicates"
-  [{:keys [x y algorithm] :as data}]
-  (or (change-results/retrieve data) (create data)))

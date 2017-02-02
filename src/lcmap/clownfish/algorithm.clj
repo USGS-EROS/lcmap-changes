@@ -58,3 +58,28 @@
   (let [conf  (configuration data)
         now   (tc/to-string (time/now))]
     (template/render (:inputs_url_template conf) (merge data {:now now}))))
+
+(defn get-algorithms
+  "Returns all algorithms defined in the system."
+  []
+  (log/tracef "get-algorithms...")
+  {:status 200 :body (all)})
+
+(defn get-algorithm
+  "Returns an algorithm if defined in the system."
+  [algorithm]
+  (log/tracef "get-algorithm: %s..." algorithm)
+  (let [result (configuration {:algorithm algorithm})]
+    (if result
+      {:status 200 :body result}
+      {:status 404 :body (str algorithm " not found.")})))
+
+(defn put-algorithm
+  "Updates or creates an algorithm definition"
+  [algorithm {body :body}]
+  (log/tracef "put-algorithm: %s..." algorithm)
+  (let [alg-def (merge {:algorithm algorithm} body)]
+    (or (some->> (validate alg-def)
+                 (assoc {:status 403} :body))
+        (some->> (upsert alg-def)
+                 (assoc {:status 202} :body)))))
