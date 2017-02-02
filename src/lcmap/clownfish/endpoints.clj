@@ -59,7 +59,6 @@
   [request response]
   (supported-types request response))
 
-
 ;;;; Resources
 (defn resource
   "HTTP Resource Handlers"

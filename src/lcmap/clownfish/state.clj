@@ -7,7 +7,7 @@
 (defstate tile-specs
   ;:start {:tile_x 10 :tile_y 10 :shift_x 0 :shift_y 0})
    :start (let [url (get-in config [:state :tile-specs-url])]
-              (log/info "Loading tile-specs...")
+              (log/info "Loading tile-specs")
               (try
                 (json/decode (slurp url) true)
                 (catch Exception e

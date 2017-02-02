@@ -17,7 +17,7 @@
   (with-system
     (testing "no algorithms defined"
       (let [resp (req :get (str http-host "/algorithms"))]
-        ()))
+        (log/errorf "no algorithms defined response: %s" resp)))
     (testing "add bad algorithms"
       (let [resp (req :get (str http-host "/algorithms"))]
         ()))
