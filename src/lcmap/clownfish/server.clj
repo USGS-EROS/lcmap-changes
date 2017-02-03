@@ -46,7 +46,6 @@
       (wrap-request-debug)
       (wrap-exception)))
 
-
 ;;; Server-related state
 
 (defstate ring-handler
@@ -62,29 +61,28 @@
            (log/debugf "stopping Jetty")
            (.stop server)))
 
-
 (defn handle-delivery
- [ch metadata payload]
- (let [change-result (event/decode-message metadata payload)]
-   (log/debugf "deliver: %s" metadata)
-   (log/debugf "content: %s" change-result)
-   (results/save change-result)
-   (lb/ack event/amqp-channel (metadata :delivery-tag))))
+  [ch metadata payload]
+  (let [change-result (event/decode-message metadata payload)]
+    (log/debugf "deliver: %s" metadata)
+    (log/debugf "content: %s" change-result)
+    (results/save change-result)
+    (lb/ack event/amqp-channel (metadata :delivery-tag))))
 
 (defn handle-consume
- [consumer-tag]
- (log/debugf "consume ok: %s" consumer-tag))
+  [consumer-tag]
+  (log/debugf "consume ok: %s" consumer-tag))
 
 (defstate listener
- :start (let [f {:handle-delivery-fn handle-delivery
-                 :handle-consume-ok-fn handle-consume}
-              queue (get-in config [:server :queue])
-              listener-fn (lcons/create-default event/amqp-channel f)]
-          (log/debugf "starting listener: %s" queue)
-          (lb/consume event/amqp-channel queue listener-fn))
- :stop  (let []
-          (log/debug "stopping listener: %s" listener)
-          (lb/cancel event/amqp-channel listener)))
+  :start (let [f {:handle-delivery-fn handle-delivery
+                  :handle-consume-ok-fn handle-consume}
+               queue (get-in config [:server :queue])
+               listener-fn (lcons/create-default event/amqp-channel f)]
+           (log/debugf "starting listener: %s" queue)
+           (lb/consume event/amqp-channel queue listener-fn))
+  :stop  (let []
+           (log/debug "stopping listener: %s" listener)
+           (lb/cancel event/amqp-channel listener)))
 
 ;; Encoders; turn objects into strings suitable for JSON responses.
 (defn iso8601-encoder

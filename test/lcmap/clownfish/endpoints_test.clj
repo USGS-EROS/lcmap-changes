@@ -26,18 +26,28 @@
         (is (= 0 (count body)))
         (is (coll? body))))
 
-    (testing "add bad algorithms"
-      (let [resp (req :put (str http-host "/algorithms"))]
+    (testing "add algorithm - bad input_url_template"
+      (let [body    {:enabled true
+                     :blah-inputs_url_template "http://host:port/context"}
+            headers {"Accept" "application/json"
+                     "Content-Type" "application/json"}
+            resp (req :put (str http-host "/algorithm/bad-input-url")
+                      :body (json/encode body)
+                      :headers headers)]
         ()))
+
     (testing "add good algorithms"
       (let [resp (req :get (str http-host "/algorithms"))]
         ()))
+
     (testing "update algorithm"
       (let [resp (req :get (str http-host "/algorithms"))]
         ()))
+
     (testing "get algorithm"
       (let [resp (req :get (str http-host "/algorithm/test-alg-1"))]
         ()))
+
     (testing "get algorithms"
       (let [resp (req :get (str http-host "/algorithms"))]
         ()))))

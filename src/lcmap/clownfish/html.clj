@@ -36,7 +36,6 @@
                                [:.service] (html/content (name svc-name))
                                [:.message] (html/content (-> status :message str))))
 
-
 (html/deftemplate default "public/application.html"
   [entity]
   [:nav] (html/content (nav))

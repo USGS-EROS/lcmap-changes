@@ -65,28 +65,39 @@
   []
   (wrap-handler
    (context "/" request
-    (GET "/" []
-          (with-meta {:status 200} {:template html/default}))
+     (GET "/" []
+       (with-meta
+         {:status 200}
+         {:template html/default}))
 
-    (ANY "/" []
-         (with-meta (allow ["GET"]) {:template html/default}))
+     (ANY "/" []
+       (with-meta
+         (allow ["GET"])
+         {:template html/default}))
 
-    (GET "/health" []
-          (with-meta (health/check-health) {:template html/status-list}))
+     (GET "/health" []
+       (with-meta
+         (health/check-health)
+         {:template html/status-list}))
 
-    (GET "/algorithms" []
-          (with-meta (alg/get-algorithms) {:template html/default}))
+     (GET "/algorithms" []
+       (with-meta
+         (alg/get-algorithms)
+         {:template html/default}))
 
-    (GET "/algorithm/:algorithm{.+}" [algorithm]
-          (with-meta (alg/get-algorithm algorithm) {:template html/default}))
+     (GET "/algorithm/:algorithm{.+}" [algorithm]
+       (with-meta
+         (alg/get-algorithm algorithm)
+         {:template html/default}))
 
-    (PUT "/algorithm/:algorithm{.+}" [algorithm]
-          (with-meta (alg/put-algorithm algorithm request)
-                     {:template html/default}))
+     (PUT "/algorithm/:algorithm{.+}" [algorithm]
+       (with-meta
+         (alg/put-algorithm algorithm request)
+         {:template html/default}))
 
-    (GET "/results/:algorithm{.+}/:x{[0-9]+}/:y{[0-9]+}" [algorithm x y]
-          (with-meta
-            (results/get-results algorithm x y request)
-            {:template html/default})))
+     (GET "/results/:algorithm{.+}/:x{[0-9]+}/:y{[0-9]+}" [algorithm x y]
+       (with-meta
+         (results/get-results algorithm x y request)
+         {:template html/default})))
 
    prepare-with respond-with))

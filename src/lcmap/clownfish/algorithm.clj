@@ -15,9 +15,9 @@
    :inputs_url_template sc/Str})
 
 (defn validate
-   "Produce a map of errors if the algorithm is invalid, otherwise nil."
-   [algorithm-definition]
-   (sc/check schema algorithm-definition))
+  "Produce a map of errors if the algorithm is invalid, otherwise nil."
+  [algorithm-definition]
+  (sc/check schema algorithm-definition))
 
 (defn all
   "Retrieve all algorithms."

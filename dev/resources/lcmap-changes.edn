@@ -18,14 +18,14 @@
                           :type "topic"
                           :opts {:durable true}}]
              :bindings [{:exchange "local.lcmap.changes.server"
-                         :queue "local.lcmap.changes.server"
+                         :queue "local.lcmap.changes.worker"
                          :opts {:routing-key "change-detection"}}
                         {:exchange "local.lcmap.changes.worker"
-                         :queue "local.lcmap.changes.worker"
+                         :queue "local.lcmap.changes.server"
                          :opts {:routing-key "change-detection"}}]}
  :http       {:port 5778
               :join? false
               :daemon? true}
- :server     {:exchange "local.lcmap.changes.worker"
+ :server     {:exchange "local.lcmap.changes.server"
               :queue "local.lcmap.changes.server"}
  :state      {:tile-specs-url "data/tile-specs.json"}}
