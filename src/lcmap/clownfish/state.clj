@@ -1,5 +1,6 @@
 (ns lcmap.clownfish.state
   (:require [cheshire.core :as json]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.tools.logging :as log]
             [lcmap.clownfish.config :refer [config]]
@@ -18,7 +19,7 @@
                   :headers {"Accept" "application/json"}}))
 
 (defmethod retrieve :local [url]
-  (slurp url))
+  (-> url io/resource io/file slurp))
 
 (defstate tile-specs
   ;:start {:tile_x 10 :tile_y 10 :shift_x 0 :shift_y 0})

@@ -28,4 +28,4 @@
              :daemon? true}
  :server    {:exchange "unit.lcmap.changes.worker"
              :queue    "unit.lcmap.changes.server"}
- :state     {:tile-specs-url "data/tile-specs.json"}}
+ :state     {:tile-specs-url "tile-specs.json"}}
