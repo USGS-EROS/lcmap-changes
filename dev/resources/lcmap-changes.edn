@@ -28,4 +28,4 @@
               :daemon? true}
  :server     {:exchange "local.lcmap.changes.server"
               :queue "local.lcmap.changes.server"}
- :state      {:tile-specs-url "data/tile-specs.json"}}
+ :state      {:tile-specs-url "http://lcmap-dev.cr.usgs.gov/landsat/tile-specs"}}
