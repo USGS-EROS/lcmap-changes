@@ -1,4 +1,4 @@
-{:database   {:cluster {:contact-points "localhost"}
+{:database   {:cluster {:contact-points ["localhost"]}
               :default-keyspace "lcmap_changes_local"}
  :event     {
              :host "localhost"
