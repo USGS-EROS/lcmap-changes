@@ -6,7 +6,8 @@
             [mount.core :as mount]
             [org.httpkit.client :as http]))
 
-(def http-port (-> (slurp "test/resources/lcmap-changes.edn")
+(def http-port (-> (io/resource "lcmap-changes.edn")
+                   (slurp)
                    (edn/read-string)
                    (get-in [:http :port])))
 

@@ -3,23 +3,31 @@
   (:require [clojure.java.io :as io]
             [clojure.test :refer :all]
             [clojure.tools.logging :as log]
+            [cheshire.core :as json]
+            ;; have to require server to include server state
+            ;; otherwise it will never be started
             [lcmap.clownfish.server :as server]
             [lcmap.clownfish.shared :refer [http-host with-system req]]))
 
 (deftest changes-health-resource
   (with-system
     (testing "health check"
-      (let [resp (req :get (str http-host "/health")
-                      :headers {"Accept" "*/*"})]
+      (let [resp (log/spy (req :get (str http-host "/health")
+                               :headers {"Accept" "*/*"}))]
         (is (= 200 (:status resp)))))))
 
 (deftest algorithms
   (with-system
     (testing "no algorithms defined"
-      (let [resp (req :get (str http-host "/algorithms"))]
-        (log/errorf "no algorithms defined response: %s" resp)))
+      (let [resp (log/spy (req :get (str http-host "/algorithms")
+                               :headers {"Accept" "application/json"}))
+            body (json/decode (:body resp))]
+        (is (= 200 (:status resp)))
+        (is (= 0 (count body)))
+        (is (coll? body))))
+
     (testing "add bad algorithms"
-      (let [resp (req :get (str http-host "/algorithms"))]
+      (let [resp (req :put (str http-host "/algorithms"))]
         ()))
     (testing "add good algorithms"
       (let [resp (req :get (str http-host "/algorithms"))]

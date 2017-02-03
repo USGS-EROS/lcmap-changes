@@ -48,7 +48,6 @@
                                   [http-kit "2.2.0"]
                                   [http-kit.fake "0.2.2"]
                                   [proto-repl "0.3.1"]]
-
                    :plugins [[lein-codox "0.10.0"]
                              [lein-ancient "0.6.10"]
                              [lein-kibit "0.1.2"]

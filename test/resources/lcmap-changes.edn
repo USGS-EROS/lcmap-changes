@@ -23,7 +23,7 @@
                         {:exchange "unit.lcmap.changes.worker"
                          :queue "unit.lcmap.changes.worker"
                          :opts {:routing-key "change-detection"}}]}
- :http      {:port 5780
+ :http      {:port 5779
              :join? false
              :daemon? true}
  :server    {:exchange "unit.lcmap.changes.worker"

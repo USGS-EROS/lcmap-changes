@@ -3,6 +3,9 @@
   (:require [clojure.java.io :as io]
             [clojure.test :refer :all]
             [clojure.tools.logging :as log]
+            ;; have to require server to include server state
+            ;; otherwise it will never be started
+            [lcmap.clownfish.server :as server]
             [lcmap.clownfish.shared :refer [http-host with-system req]]))
 
 (deftest changes-tests
