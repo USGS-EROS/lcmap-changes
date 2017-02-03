@@ -58,6 +58,7 @@
                     :dependencies [[http-kit.fake "0.2.2"]]}
              :repl {:resource-paths ["dev" "dev/resources" "resources" "data"]}
              :uberjar {:aot :all
+                       :resource-paths ["data"]
                        :main lcmap.clownfish.core}}
   :main lcmap.clownfish.core
   :target-path "target/%s/"
