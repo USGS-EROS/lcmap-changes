@@ -14,19 +14,20 @@
                        :local)))
 
 (defmethod retrieve :http [url]
-  @(http/request {:url url
-                  :method :get
-                  :headers {"Accept" "application/json"}}))
+  (-> @(http/request {:url url
+                      :method :get
+                      :headers {"Accept" "application/json"}})
+      (:body)))
 
 (defmethod retrieve :local [url]
-  (-> url io/resource slurp))
+  (-> url io/resource slurp (json/decode true)))
 
 (defstate tile-specs
   ;:start {:tile_x 10 :tile_y 10 :shift_x 0 :shift_y 0})
   :start (let [url (get-in config [:state :tile-specs-url])]
            (log/debug "Loading tile-specs")
            (try
-             (-> url retrieve :body (json/decode true))
+             (retrieve url)
              (catch Exception e
                (log/errorf e "Could not load tile-specs from: %s" url)
                (throw e)))))
