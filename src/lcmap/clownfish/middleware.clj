@@ -61,6 +61,6 @@
         ;; this will print a stack trace, useful for debugging.
         (log/debug ex (.getMessage ex))
         ;; this will not print a stack trace, just a short message.
-        (log/error "%s: %s" (.getMessage ex) (ex-data ex))
+        (log/errorf "%s: %s" (.getMessage ex) (ex-data ex))
         ;; produce a ring style response map
         (ex->resp ex)))))
