@@ -18,9 +18,16 @@
             [mount.core :refer [args defstate stop] :as mount]))
 
 (defn decode-message
-  "Convert byte payload to JSON."
+  "Convert byte payload to JSON or nil."
   [metadata payload]
-  (transform-keys ->snake_case_keyword (json/decode (String. payload "UTF-8"))))
+  (try
+    (transform-keys ->snake_case_keyword
+                     (json/decode (String. payload "UTF-8")))
+    (catch Exception e
+      (log/debugf "cannot decode message: %s"
+                  {:metadata metadata :payload payload :exception e})
+      nil)))
+
 
 (declare amqp-connection amqp-channel)
 

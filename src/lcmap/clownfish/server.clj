@@ -63,18 +63,21 @@
 
 (defn handle-delivery
   [ch metadata payload]
-  (let [change-result (event/decode-message metadata payload)]
-    (log/debugf "metadata: %s" metadata)
-    (log/debugf "change-result: %s" change-result)
-    (try
-      (results/save change-result)
-      (lb/ack event/amqp-channel (metadata :delivery-tag))
-      (log/infof "result saved (:result dissoc'd)  %s"
-                 (dissoc change-result :result))
-      (catch Exception ex
-        (log/errorf "can't save result to db: %s"  ex)
-        (log/errorf "discarding result: %s" change-result)
-        (lb/nack event/amqp-channel (metadata :delivery-tag) false false)))))
+  (if-let [change-result (event/decode-message metadata payload)]
+    (do
+      (log/debugf "metadata: %s" metadata)
+      (log/debugf "change-result: %s" change-result)
+      (try
+        (results/save change-result)
+        (lb/ack event/amqp-channel (metadata :delivery-tag))
+        (log/infof "result saved %s"
+                   (dissoc change-result :inputs_md5 :result_md5 :result))
+        (catch Exception ex
+          (log/errorf "can't save result to db: %s"  ex)
+          (log/errorf "discarding result: %s" change-result)
+          (lb/nack event/amqp-channel (metadata :delivery-tag) false false))))
+    (do (log/errorf "cannot decode message: %s" payload)
+        (lb/nack event/amqp-channel (metadata :delivery-tag) false false))))
 
 (defn handle-consume
   [consumer-tag]
