@@ -46,6 +46,7 @@
 (defn schedule
   "Schedules algorithm execution while preventing duplicates"
   [{:keys [x y algorithm] :as data}]
+  (log/infof "scheduling: %s %s %s" x y algorithm)
   (or (retrieve data) (ticket/create data)))
 
 (defn get-results
@@ -59,6 +60,7 @@
         results (retrieve data)]
     (log/tracef "get-changes results: %s" results)
     (if (and results (not (nil? (:result results))) (not (:refresh data)))
+      (log/infof "returning results for %s" (dissoc data :refresh))
       {:status 200 :body (merge data results)}
       (let [src?   (future (source-data-available? data))
             alg?   (alg/available? data)
