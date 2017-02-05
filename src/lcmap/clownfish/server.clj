@@ -71,7 +71,7 @@
         (results/save change-result)
         (lb/ack event/amqp-channel (metadata :delivery-tag))
         (log/infof "result saved %s"
-                   (dissoc change-result :inputs_md5 :result_md5 :result))
+                   (select-keys change-result [:result_produced :algorithm :x :y]))
         (catch Exception ex
           (log/errorf "can't save result to db: %s"  ex)
           (log/errorf "discarding result: %s" change-result)
