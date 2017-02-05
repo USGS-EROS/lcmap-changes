@@ -64,10 +64,15 @@
 (defn handle-delivery
   [ch metadata payload]
   (let [change-result (event/decode-message metadata payload)]
-    (log/debugf "deliver: %s" metadata)
-    (log/debugf "content: %s" change-result)
-    (results/save change-result)
-    (lb/ack event/amqp-channel (metadata :delivery-tag))))
+    (log/debugf "metadata: %s" metadata)
+    (log/debugf "change-result: %s" change-result)
+    (try
+      (results/save change-result)
+      (lb/ack event/amqp-channel (metadata :delivery-tag))
+      (catch Exception ex
+        (log/errorf "can't save result to db: %s"  ex)
+        (log/errorf "discarding result: %s" change-result)
+        (lb/nack event/amqp-channel (metadata :delivery-tag) false false)))))
 
 (defn handle-consume
   [consumer-tag]
