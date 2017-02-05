@@ -95,7 +95,7 @@
          (alg/put-algorithm algorithm request)
          {:template html/default}))
 
-     (GET "/results/:algorithm{.+}/:x{[0-9]+}/:y{[0-9]+}" [algorithm x y]
+     (GET "/results/:algorithm{.+}/:x{[0-9-]+}/:y{[0-9-]+}" [algorithm x y]
        (with-meta
          (results/get-results algorithm x y request)
          {:template html/default})))
