@@ -24,11 +24,11 @@
 (defn save
   "Saves algorithm results"
   [{:keys [x y algorithm result result_md5 result_ok result_produced] :as data}]
-  (let [[tile_x, tile_y] (snap x y (first tile-specs))
-        change-result {:tile_x tile_x
-                       :tile_y tile_y
-                       :x x
-                       :y y
+  (let [[tile_x, tile_y] (snap (int x) (int y) (first tile-specs))
+        change-result {:tile_x (int tile_x)
+                       :tile_y (int tile_y)
+                       :x (int x)
+                       :y (int y)
                        :algorithm algorithm
                        :result result
                        :result_md5 result_md5
