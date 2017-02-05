@@ -38,6 +38,6 @@
     (->> ticket (announce)
                 (hayt/values)
                 (hayt/insert :results)
-                (db/execute)
-                (log/infof "ticket created: %s"))
+                (db/execute))
+    (log/infof "ticket created: %s")            
     ticket))
