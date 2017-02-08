@@ -84,35 +84,3 @@
 
 (defstate configure-amqp-channel
   :start (do (lb/qos amqp-channel 1) true))
-
-(defstate exchanges
-  :start (let [configs (get-in config [:event :exchanges])]
-           (doseq [exchange configs]
-             (log/debugf "Creating Exchange: %s" (:name exchange))
-             (le/declare amqp-channel
-                         (:name exchange)
-                         (:type exchange)
-                         (:opts exchange)))
-           configs))
-
-(defstate queues
-  :start (let [configs (get-in config [:event :queues])]
-           (doseq [queue configs]
-             (log/debugf "Creating Queue: %s" (:name queue))
-             (lq/declare amqp-channel (:name queue) (:opts queue)))
-           configs))
-
-(defstate bindings
-  :start (let [exchanges-state exchanges
-               queues-state    queues
-               configs         (get-in config [:event :bindings])]
-           (doseq [binder configs]
-             (log/debugf "Binding %s to %s with opts %s"
-                         (:exchange binder)
-                         (:queue binder)
-                         (:opts binder))
-             (lq/bind amqp-channel
-                      (:queue binder)
-                      (:exchange binder)
-                      (:opts binder)))
-           configs))

@@ -6,26 +6,27 @@
    [mount.core :as mount]
    [clojure.java.io :as io]))
 
-(defn start
-  "Start dev system with a replacement config namespace"
-  []
-  (let [cfg (edn/read-string (slurp (io/resource "lcmap-changes.edn")))]
-   (-> (mount/with-args {:config cfg})
-       (mount/start))))
+(comment
+  (defn start
+    "Start dev system with a replacement config namespace"
+    []
+    (let [cfg (edn/read-string (slurp (io/resource "lcmap-changes.edn")))]
+     (-> (mount/with-args {:config cfg})
+         (mount/start))))
 
-(defn stop
-  "Stop system"
-  []
-  (mount/stop))
+  (defn stop
+    "Stop system"
+    []
+    (mount/stop))
 
-(defn go
-  "Prepare and start a system"
-  []
-  (start)
-  :ready)
+  (defn go
+    "Prepare and start a system"
+    []
+    (start)
+    :ready)
 
-(defn reset
-  "Stop, refresh, and start a system."
-  []
-  (stop)
-  (refresh :after `go))
+  (defn reset
+    "Stop, refresh, and start a system."
+    []
+    (stop)
+    (refresh :after `go)))

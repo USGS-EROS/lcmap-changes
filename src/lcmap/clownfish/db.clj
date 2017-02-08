@@ -74,10 +74,6 @@
   :start (db-cluster-start)
   :stop  (db-cluster-stop))
 
-(defstate db-schema
-  :start (execute-cql "schema.setup.cql" db-cluster)
-  :stop  (execute-cql "schema.teardown.cql" db-cluster))
-
 (defn db-session-start
   "Create Cassandra session.
 
