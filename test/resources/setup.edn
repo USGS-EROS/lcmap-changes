@@ -1,0 +1,14 @@
+{:queues [{:name "unit.lcmap.changes.server"
+           :opts {:durable true :exclusive false :auto-delete false}}
+          {:name "unit.lcmap.changes.worker"
+           :opts {:durable true :exclusive false :auto-delete false}}]
+ :exchanges [{:name "unit.lcmap.changes.server"
+              :type "topic" :opts {:durable true}}
+             {:name "unit.lcmap.changes.worker" :type "topic"
+              :opts {:durable true}}]
+ :bindings [{:exchange "unit.lcmap.changes.server"
+             :queue "unit.lcmap.changes.worker"
+             :opts {:routing-key "change-detection"}}
+            {:exchange "unit.lcmap.changes.worker"
+             :queue "unit.lcmap.changes.server"
+             :opts {:routing-key "change-detection-result"}}]}

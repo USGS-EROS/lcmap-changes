@@ -5,7 +5,7 @@
             [clojure.tools.logging :as log]
             [langohr.basic :as lb]
             [lcmap.clownfish.algorithm :as alg]
-            [lcmap.clownfish.config :refer [config]]
+            [lcmap.clownfish.configuration :refer [config]]
             [lcmap.clownfish.db :as db]
             [lcmap.clownfish.event :refer [amqp-channel]]
             [lcmap.clownfish.state :refer [tile-specs]]
@@ -39,5 +39,5 @@
                 (hayt/values)
                 (hayt/insert :results)
                 (db/execute))
-    (log/infof "ticket created: %s")            
+    (log/infof "ticket created: %s")
     ticket))

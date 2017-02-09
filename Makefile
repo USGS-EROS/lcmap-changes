@@ -14,13 +14,13 @@ docker-up:
 	docker run usgseros/lcmap-changes:0.1.0-SNAPSHOT
 
 docker-deps-up:
-	docker-compose -f resources/docker-compose.yml up -d
+	docker-compose -f test/resources/docker-compose.yml up -d
 
 docker-deps-up-nodaemon:
-	docker-compose -f resources/docker-compose.yml up
+	docker-compose -f test/resources/docker-compose.yml up
 
 docker-deps-down:
-	docker-compose -f resources/docker-compose.yml down
+	docker-compose -f test/resources/docker-compose.yml down
 
 docker-rm-all: docker-deps-down
 	@if [ -n "$(CONTAINERS)" ]; then \

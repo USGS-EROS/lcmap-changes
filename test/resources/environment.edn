@@ -1,0 +1,10 @@
+{:http-port      5778
+ :event-host     "localhost"
+ :event-port     5672
+ :db-keyspace    "lcmap_changes_unit"
+ :db-url         "localhost"
+ :db-user        "guest"
+ :db-pass        "guest"
+ :exchange       "unit.lcmap.changes.server"
+ :queue          "unit.lcmap.change.server"
+ :tile-specs-url "tile-specs.json"}

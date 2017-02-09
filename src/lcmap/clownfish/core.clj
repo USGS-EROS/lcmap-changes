@@ -8,50 +8,31 @@
   each can be scaled independently to handle varying workloads.
 
   See also:
-  * `dev/lcmap/clownfish/dev.clj` for REPL-driven development.
-  * `dev/resources/lcmap-landsat.edn` for configuration."
-  (:require [again.core :as again]
-            [mount.core :refer [defstate] :as mount]
-            [clojure.edn :as edn]
+  * `dev/lcmap/clownfish/dev.clj` for REPL-driven development."
+  (:require
             [clojure.tools.logging :as log]
-            [lcmap.clownfish.config :as config])
+            [lcmap.clownfish.system :as system])
   (:gen-class))
 
-(defstate hook
-  :start (do
-           (log/debugf "registering shutdown handler")
-           (.addShutdownHook (Runtime/getRuntime)
-                             (Thread. #(mount/stop) "shutdown-handler"))))
+(def environment
+ "Creates environment map from the system environment"
+ {:http-port      (System/getenv "CLOWNFISH_HTTP_PORT")
+  :event-host     (System/getenv "CLOWNFISH_RABBIT_HOST")
+  :event-port     (System/getenv "CLOWNFISH_RABBIT_PORT")
+  :db-keyspace    (System/getenv "CLOWNFISH_DB_KEYSPACE")
+  :db-url         (System/getenv "CLOWNFISH_DB_CONTACT_POINTS")
+  :db-user        (System/getenv "CLOWNFISH_DB_USERNAME")
+  :db-pass        (System/getenv "CLOWNFISH_DB_PASSWORD")
+  :exchange       (System/getenv "CLOWNFISH_EXCHANGE")
+  :queue          (System/getenv "CLOWNFISH_QUEUE")
+  :tile-specs-url (System/getenv "CLOWNFISH_TILE_SPECS_URL")})
 
-(defn args->cfg
-  "Transform STDIN args (EDN) to data.
-
-  CLI arguments are automatically split on whitespace; this function
-  joins arguments before reading the first form."
-  [args]
-  (->> args
-       (clojure.string/join " ")
-       (clojure.edn/read-string)))
-
-(def retry-strategy (again/max-retries 10 (again/constant-strategy 5000)))
 
 (defn -main
   "Start the server"
   [& args]
-  (let [cfg (args->cfg args)]
-    (log/debugf "cfg: '%s'" cfg)
-    (when (get-in cfg [:server])
-      (log/info "HTTP server mode enabled")
-      (require 'lcmap.clownfish.server))
-
-    ;;; Retry and try catch are to wait for system resources to become
-    ;;; available.
-    (try
-      (again/with-retries retry-strategy
-        (do (log/info "Stopping mount components")
-            (mount/stop)
-            (log/info "Starting mount components...")
-            (mount/start (mount/with-args {:config cfg}))))
-      (catch Exception e
-        (log/fatalf e "Could not start lcmap-changes... exiting")
-        (System/exit 1)))))
+  (try
+    (system/start environment)
+    (catch Exception e
+      (log/fatalf e "Could not start lcmap-changes... exiting")
+      (System/exit 1))))

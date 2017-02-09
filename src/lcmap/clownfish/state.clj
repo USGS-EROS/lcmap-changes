@@ -3,7 +3,7 @@
             [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.tools.logging :as log]
-            [lcmap.clownfish.config :refer [config]]
+            [lcmap.clownfish.configuration :refer [config]]
             [mount.core :refer [defstate] :as mount]
             [org.httpkit.client :as http]))
 
@@ -24,8 +24,8 @@
 
 (defstate tile-specs
   ;:start {:tile_x 10 :tile_y 10 :shift_x 0 :shift_y 0})
-  :start (let [url (get-in config [:state :tile-specs-url])]
-           (log/debug "Loading tile-specs")
+  :start (let [url (:tile-specs-url config)]
+           (log/debugf "Loading tile-specs from: %s" url)
            (try
              (-> url retrieve (json/decode true))
              (catch Exception e

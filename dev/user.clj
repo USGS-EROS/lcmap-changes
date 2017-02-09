@@ -1,32 +1,51 @@
 (ns user
-  (:require
-   [clojure.tools.namespace.repl :refer [refresh refresh-all]]
-   [clojure.java.io :as io]
-   [clojure.edn :as edn]
-   [mount.core :as mount]
-   [clojure.java.io :as io]))
+  (:require [again.core :as again]
+            [clojure.edn :as edn]
+            [clojure.java.io :as io]
+            [clojure.stacktrace :as stacktrace]
+            [clojure.tools.logging :as log]
+            [clojure.tools.namespace.repl :refer [refresh refresh-all]]
+            [lcmap.clownfish.event :as event]
+            [lcmap.clownfish.setup.base :as setup-base]
+            [lcmap.clownfish.setup.db]
+            [lcmap.clownfish.setup.event]
+            [lcmap.clownfish.system :as system]
+            [mount.core :as mount]))
 
-(comment
-  (defn start
-    "Start dev system with a replacement config namespace"
-    []
-    (let [cfg (edn/read-string (slurp (io/resource "lcmap-changes.edn")))]
-     (-> (mount/with-args {:config cfg})
-         (mount/start))))
+(def system_var nil)
+(def retry-strategy (again/max-retries 0 (again/constant-strategy 0)))
 
-  (defn stop
-    "Stop system"
-    []
-    (mount/stop))
+(defn init-db
+  "Manual operation to set up a db schema."
+  []
+  (lcmap.clownfish.setup.db/setup))
 
-  (defn go
-    "Prepare and start a system"
-    []
-    (start)
-    :ready)
+(defn init-event
+  "Manual operation to set up rabbit queues, exchanges and bindings."
+  []
+  (lcmap.clownfish.setup.event/setup
+    (merge setup-base/config (:amqp-channel (event/amqp-channel)))))
 
-  (defn reset
-    "Stop, refresh, and start a system."
-    []
-    (stop)
-    (refresh :after `go)))
+(defn start
+  []
+  (alter-var-root #'system_var
+    (try
+      (system/start (edn/read-string (slurp (io/resource "environment.edn")))
+       retry-strategy)
+      (catch Exception e
+        ;; (stacktrace/print-stack-trace e)
+        (log/errorf "dev system exception: %s" (stacktrace/root-cause e) nil)))))
+
+(defn stop
+  "Stop system"
+  []
+  (alter-var-root #'system_var
+    (when system_var
+      (system/stop))))
+
+(defn bounce
+  "Take system down, bring back up, refresh repl"
+  []
+  (stop)
+  (start)
+  (refresh))

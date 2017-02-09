@@ -1,0 +1,6 @@
+-- For anything other than a test environment, the database schema
+-- should survive application restarts. This file is present so that
+-- a similar path can be executed for multiple environments without
+-- the need for conditional logic.
+TRUNCATE TABLE lcmap_changes_unit.results;
+TRUNCATE TABLE lcmap_changes_unit.algorithms;

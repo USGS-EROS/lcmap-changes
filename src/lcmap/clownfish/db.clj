@@ -2,13 +2,13 @@
   "Cassandra connections and helper functions.
 
   This namespace provide states for the DB cluster, session,
-  and schema setup and teardown. States refer to a `:database`
-  key/value of `lcmap.clownfish.config/config` for connection
+  and schema setup and teardown. States refer to a `:db`
+  key/value of `lcmap.clownfish.configuration/config` for connection
   information."
   (:require [clojure.java.io :as io]
             [clojure.tools.logging :as log]
             [dire.core :as dire :refer [with-handler!]]
-            [lcmap.clownfish.config :refer [config]]
+            [lcmap.clownfish.configuration :refer [config]]
             [mount.core :refer [defstate] :as mount]
             [qbits.alia :as alia]))
 
@@ -60,7 +60,7 @@
 
   See also `db-session`."
   []
-  (let [db-cfg (get-in config [:database :cluster])]
+  (let [db-cfg (get-in config [:db :cluster])]
     (log/debugf "starting db with: %s" db-cfg)
     (alia/cluster db-cfg)))
 
@@ -89,7 +89,7 @@
   should be created for each one."
   []
   (log/debugf "starting db session")
-  (alia/connect db-cluster (get-in config [:database :default-keyspace])))
+  (alia/connect db-cluster (get-in config [:db :keyspace])))
 
 (defn db-session-stop
   "Close Cassandra session."
