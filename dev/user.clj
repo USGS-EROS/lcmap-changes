@@ -6,7 +6,7 @@
             [clojure.stacktrace :as stacktrace]
             [clojure.tools.logging :as log]
             [clojure.tools.namespace.repl :refer [refresh refresh-all]]
-            [lcmap.clownfish.system :as system]
+            [lcmap.clownfish.system :as system]))
 
 (comment
  "In it's initial state, the db does not have a schema and rabbitmq does
