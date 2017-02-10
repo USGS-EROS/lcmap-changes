@@ -6,4 +6,4 @@
   :start (db/execute-cql "schema.setup.cql" db/db-cluster))
 
 (defstate teardown
-  :start (db/execute-cql "schema.teardown.cql" db/db-cluster))
+  :stop (db/execute-cql "schema.teardown.cql" db/db-cluster))

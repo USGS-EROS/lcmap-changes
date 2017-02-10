@@ -37,11 +37,12 @@
  cassandra schemas (in dev and test) and the rabbitmq constructs are
  using qualified names that indicate either an environment of 'local' or 'unit'.
 
- If this is something you really want to do, examine
- dev/resources/environment.clj and construct a map with values altered as
- needed.  lcmap.clownfish.setup.* is hard-wired to look for schema.setup.cql,
- schema.teardown.cql and rabbit-setup.edn on the resource paths.  This was done
- intentionally to prevent accidental modifications to remote environments.
+ If this is something you really want to do, follow these steps (db as example):
+ 1 - Modify the dev/resources/scheme.setup.cql
+ 2 - Start the repl
+ 3 - Create an environment dictionary configured for remote server access
+ 4 - (require '[lcmap.clownfish.setup.initialize :as initialize])
+ 5 - (initialize/db the-environment)
 ")
 
 (def system-initialization nil)
