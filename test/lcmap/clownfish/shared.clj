@@ -10,9 +10,6 @@
             [lcmap.clownfish.system :as system]
             [org.httpkit.client :as http]))
 
-(def http-port (get-in config [:http :port]))
-(def http-host (str "http://localhost:" http-port))
-
 (defmacro with-system
   "Start and stop the system, useful for integration tests."
   [& body]
