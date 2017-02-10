@@ -18,10 +18,10 @@
 
  If run from the repl, this will create whatever cassandra schema is provided
  in dev/resources/schema.setup.cql, and whatever rabbitmq exchanges, queues and
- bindings are contained in dev/resources/rabbit-setup.edn.
+ bindings are contained in dev/resources/rabbit.setup.edn.
 
  If run from the test profile the same holds true except the file path is
- test/resources/schema.setup.cql and test/resources/rabbit-setup.edn.
+ test/resources/schema.setup.cql and test/resources/rabbit.setup.edn.
 
  (start), (stop) and (bounce) may be called from the repl following
  initialization. lcmap.clownfish.system is hard wired to never start
@@ -35,9 +35,9 @@
  using qualified names that indicate either an environment of 'local' or 'unit'.
 
  If this is something you really want to do, follow these steps (db as example):
- 1 - Modify the dev/resources/scheme.setup.cql
+ 1 - Modify the dev/resources/schema.setup.cql
  2 - Start the repl
- 3 - Create an environment dictionary configured for remote server access
+ 3 - Create an environment map configured for remote server access
  4 - (require '[lcmap.clownfish.setup.initialize :as initialize])
  5 - (initialize/db the-environment)
 ")
