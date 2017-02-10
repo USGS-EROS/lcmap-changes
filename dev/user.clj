@@ -42,7 +42,6 @@
  5 - (initialize/db the-environment)
 ")
 
-
 (def system-var nil)
 (def retry-strategy (again/max-retries 0 (again/constant-strategy 0)))
 (def environment (edn/read-string (slurp (io/resource "environment.edn"))))

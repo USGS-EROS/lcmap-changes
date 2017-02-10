@@ -8,7 +8,7 @@
   each can be scaled independently to handle varying workloads.
 
   See also:
-  * `dev/lcmap/clownfish/dev.clj` for REPL-driven development."
+  * `dev/lcmap/clownfish/user.clj` for REPL-driven development."
   (:require
             [clojure.tools.logging :as log]
             [lcmap.clownfish.system :as system])
