@@ -37,7 +37,7 @@
       (:opts binder)))
   binding-defs)
 
-(def event-setup (edn/read-string (slurp (io/resource "rabbit-setup.edn"))))
+(def event-setup (edn/read-string (slurp (io/resource "rabbit.setup.edn"))))
 
 (defstate setup
   "Sets up all exchanges, queues and bindings on the amqp channel"
