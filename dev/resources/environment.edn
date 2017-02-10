@@ -6,5 +6,5 @@
  :db-user        "guest"
  :db-pass        "guest"
  :exchange       "local.lcmap.changes.server"
- :queue          "local.lcmap.change.server"
+ :queue          "local.lcmap.changes.server"
  :tile-specs-url "tile-specs.json"}

@@ -2,45 +2,31 @@
   (:require [again.core :as again]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
+            [clojure.repl :as repl]
             [clojure.stacktrace :as stacktrace]
             [clojure.tools.logging :as log]
             [clojure.tools.namespace.repl :refer [refresh refresh-all]]
-            [lcmap.clownfish.event :as event]
-            [lcmap.clownfish.setup.base :as setup-base]
-            [lcmap.clownfish.setup.db]
-            [lcmap.clownfish.setup.event]
-            [lcmap.clownfish.system :as system]
-            [mount.core :as mount]))
+            [lcmap.clownfish.system :as system]))
 
-(def system_var nil)
+(def system-var nil)
 (def retry-strategy (again/max-retries 0 (again/constant-strategy 0)))
-
-(defn init-db
-  "Manual operation to set up a db schema."
-  []
-  (lcmap.clownfish.setup.db/setup))
-
-(defn init-event
-  "Manual operation to set up rabbit queues, exchanges and bindings."
-  []
-  (lcmap.clownfish.setup.event/setup
-    (merge setup-base/config (:amqp-channel (event/amqp-channel)))))
+(def environment (edn/read-string (slurp (io/resource "environment.edn"))))
 
 (defn start
   []
-  (alter-var-root #'system_var
+  (alter-var-root #'system-var
     (try
-      (system/start (edn/read-string (slurp (io/resource "environment.edn")))
-       retry-strategy)
+      (system/start environment retry-strategy)
       (catch Exception e
         ;; (stacktrace/print-stack-trace e)
-        (log/errorf "dev system exception: %s" (stacktrace/root-cause e) nil)))))
+        (log/errorf "dev system exception: %s"
+                    (stacktrace/root-cause e) nil)))))
 
 (defn stop
   "Stop system"
   []
-  (alter-var-root #'system_var
-    (when system_var
+  (alter-var-root #'system-var
+    (when #'system-var
       (system/stop))))
 
 (defn bounce

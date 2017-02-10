@@ -3,6 +3,8 @@
             [clojure.tools.logging :as log]
             ;; requiring this ensures the server component will start
             [lcmap.clownfish.server :as server]
+            [lcmap.clownfish.setup.db]
+            [lcmap.clownfish.setup.event]
             [mount.core :refer [defstate] :as mount]))
 
 (defstate hook
@@ -23,7 +25,9 @@
      (do (log/info "Stopping mount components")
          (mount/stop)
          (log/info "Starting mount components...")
-         (mount/start (mount/with-args {:environment environment}))))))
-
+         (mount/start-without #'lcmap.clownfish.setup.db/setup
+                              #'lcmap.clownfish.setup.db/teardown
+                              #'lcmap.clownfish.setup.event/setup
+                              (mount/with-args {:environment environment}))))))
 (defn stop []
   (mount/stop))

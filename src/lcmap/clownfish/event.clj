@@ -34,27 +34,26 @@
 
 (defn start-amqp-connection
   "Open RabbitMQ connection."
-  [host port]
+  [cfg]
   (try
-    (log/debugf "starting RabbitMQ connection: %s:%s" host port)
-    (rmq/connect host port)
+    (log/debugf "starting RabbitMQ connection: %s" cfg)
+    (rmq/connect cfg)
     (catch java.lang.RuntimeException ex
-      (log/fatal "failed to start RabbitMQ connection"))))
+      (log/fatal "failed to start RabbitMQ connection: %s" ex))))
 
 (defn stop-amqp-connection
   "Close RabbitMQ connection."
-  []
+  [conn]
   (try
     (log/debugf "stopping RabbitMQ connection")
-    (rmq/close amqp-connection)
+    (rmq/close conn)
     (catch java.lang.RuntimeException ex
       (log/error "failed to stop RabbitMQ connection"))
     (finally
       nil)))
 
 (defstate amqp-connection
-  :start (start-amqp-connection (get-in config [:event :host])
-                                (get-in config [:event :port]))
+  :start (start-amqp-connection (:event config))
   :stop  (stop-amqp-connection amqp-connection))
 
 (defn start-amqp-channel
@@ -84,8 +83,7 @@
 (defn configure-channel
   [channel]
   (do
-    (lb/qos channel 1)
-    true))
+    (lb/qos channel 1)))
 
 (defstate configure-amqp-channel
   :start (configure-channel amqp-channel))
