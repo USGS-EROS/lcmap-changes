@@ -25,6 +25,8 @@
      (do (log/info "Stopping mount components")
          (mount/stop)
          (log/info "Starting mount components...")
+         ;; insulation to make sure these states do not get accidentally
+         ;; started 
          (mount/start-without #'lcmap.clownfish.setup.db/setup
                               #'lcmap.clownfish.setup.db/teardown
                               #'lcmap.clownfish.setup.event/setup
