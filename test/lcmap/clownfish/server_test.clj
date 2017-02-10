@@ -6,10 +6,12 @@
             ;; have to require server to include server state
             ;; otherwise it will never be started
             [lcmap.clownfish.server :as server]
-            [lcmap.clownfish.shared :refer [http-host with-system req]]))
+            [lcmap.clownfish.shared :refer [with-system req]]))
 
 (deftest changes-tests
   (with-system
+    (log/errorf "HTTP-HOST: %s" http-host)
+    (log/errorf "HTTP-PORT: %s" http-port)
     (testing "entry-point"
       (let [resp (req :get http-host)]
         (is (= 200 (:status resp)))))

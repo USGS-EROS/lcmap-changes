@@ -1,9 +1,12 @@
 (ns lcmap.clownfish.shared
   (:require [again.core :as again]
             [clojure.edn :as edn]
+            [clojure.stacktrace :as stacktrace]
             [clojure.tools.logging :as log]
             [clojure.java.io :as io]
             [lcmap.clownfish.configuration :refer [config]]
+            [lcmap.clownfish.setup.initialize :as initialize]
+            [lcmap.clownfish.setup.finalize :as finalize]
             [lcmap.clownfish.system :as system]
             [org.httpkit.client :as http]))
 
@@ -17,15 +20,21 @@
          strategy# (again/max-retries 1 (again/constant-strategy 5000))]
      (log/debugf "starting test system with environment: %s" env#)
      (try
-       (system/start {:environment env#} strategy#)
+       ;; start from a clean state every time
+       (initialize/cassandra env#)
+       (initialize/rabbitmq env#)
+       (system/start env# strategy#)
        (catch Exception e#
-         (log/errorf "Cannot start test system: %s" e#)
+         (log/errorf "Cannot start test system: %s" (stacktrace/root-cause e#))
          (System/exit 1)))
      (try
-       (do ~@body)
+       (let [~'http-port (get-in config [:http :port])
+             ~'http-host (str "http://localhost:" ~'http-port)]
+         ~@body)
        (finally
          (log/debug "Stopping test system")
-         (system/stop)))))
+         (system/stop)
+         (finalize/cassandra env#)))))
 
 (defn req
   "Convenience function for making HTTP requests."

@@ -9,23 +9,23 @@
             [lcmap.clownfish.system :as system]))
 
 (comment
- "In it's initial state, the db does not have a schema and rabbitmq does
+ "In it's initial state, cassandra does not have a schema and rabbitmq does
  not have queues, bindings or exchanges. These can be created manually:
 
  user=> (require '[lcmap.clownfish.setup.initialize :as init])
- user=> (init/db environment)
- user=> (init/eventing environment)
+ user=> (init/cassandra environment)
+ user=> (init/rabbitmq environment)
 
  If run from the repl, this will create whatever cassandra schema is provided
- in dev/resources/schema.setup.cql, and whatever rabbitmq exchanges, queues and
- bindings are contained in dev/resources/rabbit.setup.edn.
+ in dev/resources/cassandra.setup.cql, and whatever rabbitmq exchanges, queues
+ and bindings are contained in dev/resources/rabbitmq.setup.edn.
 
  If run from the test profile the same holds true except the file path is
- test/resources/schema.setup.cql and test/resources/rabbit.setup.edn.
+ test/resources/cassandra.setup.cql and test/resources/rabbitmq.setup.edn.
 
  (start), (stop) and (bounce) may be called from the repl following
  initialization. lcmap.clownfish.system is hard wired to never start
- lcmap.clownfish.setup.db or lcmap.clownfish.setup.event states.
+ lcmap.clownfish.setup.cassandra or lcmap.clownfish.setup.rabbitmq states.
  These are only ever started through initialize.clj.
 
  initialize.clj *can* be used to configure remote systems by manipulating the
@@ -35,11 +35,11 @@
  using qualified names that indicate either an environment of 'local' or 'unit'.
 
  If this is something you really want to do, follow these steps (db as example):
- 1 - Modify the dev/resources/schema.setup.cql
+ 1 - Modify the dev/resources/cassandra.setup.cql
  2 - Start the repl
  3 - Create an environment map configured for remote server access
  4 - (require '[lcmap.clownfish.setup.initialize :as initialize])
- 5 - (initialize/db the-environment)
+ 5 - (initialize/cassandra the-environment)
 ")
 
 (def system-var nil)

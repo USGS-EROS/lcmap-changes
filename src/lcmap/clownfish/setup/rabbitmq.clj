@@ -1,4 +1,4 @@
-(ns lcmap.clownfish.setup.event
+(ns lcmap.clownfish.setup.rabbitmq
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.tools.logging :as log]
@@ -37,11 +37,11 @@
       (:opts binder)))
   binding-defs)
 
-(def event-setup (edn/read-string (slurp (io/resource "rabbit.setup.edn"))))
+(def event-setup (edn/read-string (slurp (io/resource "rabbitmq.setup.edn"))))
 
 (defstate setup
   "Sets up all exchanges, queues and bindings on the amqp channel"
-  :start (do (log/infof "Setting up event system: %s" (:exchanges event-setup))
+  :start (do (log/debugf "Setting up event system: %s" (:exchanges event-setup))
              (setup-exchanges amqp-channel (:exchanges event-setup))
              (setup-queues amqp-channel (:queues event-setup))
              (setup-bindings amqp-channel (:bindings event-setup))
