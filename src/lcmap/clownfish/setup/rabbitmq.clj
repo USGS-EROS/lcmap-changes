@@ -1,5 +1,6 @@
 (ns lcmap.clownfish.setup.rabbitmq
   (:require [clojure.edn :as edn]
+            [clojure.stacktrace :as stacktrace]
             [clojure.java.io :as io]
             [clojure.tools.logging :as log]
             [langohr.exchange :as le]
@@ -37,7 +38,12 @@
       (:opts binder)))
   binding-defs)
 
-(def event-setup (edn/read-string (slurp (io/resource "rabbitmq.setup.edn"))))
+(def event-setup (try
+                  (edn/read-string (slurp (io/resource "rabbitmq.setup.edn")))
+                  (catch Exception e
+                   (log/warnf "Could not load rabbitmq.setup.edn: %s"
+                              (stacktrace/root-cause e)
+                    nil))))
 
 (defstate setup
   "Sets up all exchanges, queues and bindings on the amqp channel"
