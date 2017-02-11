@@ -141,23 +141,23 @@ LCMAP-Changes is configurable with the following environment variables
 
 | Variable | Description |
 | --- | --- |
-| `LC_HTTP_PORT` | LCMAP-Changes HTTP Server Listen Port |
-| `LC_RABBIT_HOST` | RabbitMQ Host |
-| `LC_RABBIT_PORT` | RabbitMQ Port |
-| `LC_DB_KEYSPACE` | Cassandra keyspace for LCMAP-Changes |
-| `LC_DB_CONTACT_POINTS` | Space seperated list of hostname:port of Cassandra servers |
-| `LC_DB_USERNAME` | Cassandra username |
-| `LC_DB_PASSWORD` | Cassandra password |
-| `LC_EXCHANGE` | Exchange for LCMAP-Changes to publish messages |
-| `LC_QUEUE` | Queue for LCMAP-Changes to listen for messages |
-| `LC_TILE_SPECS_URL` | URL where all tile specs can be loaded from. |
+| `CLOWNFISH_HTTP_PORT` | LCMAP-Changes HTTP Server Listen Port |
+| `CLOWNFISH_RABBIT_HOST` | RabbitMQ Host |
+| `CLOWNFISH_RABBIT_PORT` | RabbitMQ Port |
+| `CLOWNFISH_DB_KEYSPACE` | Cassandra keyspace for LCMAP-Changes |
+| `CLOWNFISH_DB_CONTACT_POINTS` | Space seperated list of hostname:port of Cassandra servers |
+| `CLOWNFISH_DB_USERNAME` | Cassandra username |
+| `CLOWNFISH_DB_PASSWORD` | Cassandra password |
+| `CLOWNFISH_EXCHANGE` | Exchange for LCMAP-Changes to publish messages |
+| `CLOWNFISH_QUEUE` | Queue for LCMAP-Changes to listen for messages |
+| `CLOWNFISH_TILE_SPECS_URL` | URL where all tile specs can be loaded from. |
 
 ## Integrating With
 Workers can be tied in with LCMAP-Changes to fulfil work tickets generated when an algorithm result has not yet been executed and stored.  An AMQP broker with persistent messaging is used to achieve loose coupling and reliable communication between the LCMAP-Changes server and workers.
 
 Actual exchanges and queues are unimportant to this specification, as LCMAP-Changes requires those to be provided as environment variables.
 
-### Work Tickets
+### Work Tickets - Sent by LCMAP-Changes
 ##### Content-Type:  ```application/json``` 
 ##### Routing-Key:   ```change-detection``` 
 ##### Body:
@@ -171,7 +171,7 @@ Actual exchanges and queues are unimportant to this specification, as LCMAP-Chan
  "inputs_url": "HTTP(s) url template String"}
  ```
  
-### Algorithm Results
+### Algorithm Results - Sent by Workers to LCMAP-Changes
 ##### Content-Type:  ```application/json``` 
 ##### Routing-Key:   ```change-detection-result``` 
 ##### Body:
