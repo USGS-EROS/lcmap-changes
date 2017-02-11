@@ -134,7 +134,8 @@ Server: Jetty(9.2.10.v20150310)
   ```
 
 ## Installation
-TBD
+Not yet on clojars.  A Docker image is available: ```docker pull usgseros/lcmap-changes```
+
 
 ## Configuration
 LCMAP-Changes is configurable with the following environment variables
@@ -184,5 +185,3 @@ Actual exchanges and queues are unimportant to this specification, as LCMAP-Chan
  "result_ok": Boolean,
  "result_produced" "ISO8601 Datetime String"}
  ```
-## Contributing
-TBD
