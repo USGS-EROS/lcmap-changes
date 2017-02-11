@@ -12,7 +12,7 @@
             [mount.core :as mount]))
 
 (comment
- "In it's initial state, the db does not have a schema and rabbitmq does
+  "In it's initial state, the db does not have a schema and rabbitmq does
  not have queues, bindings or exchanges. These can be created manually:
 
  user=> (require '[lcmap.clownfish.setup.initialize :as init])

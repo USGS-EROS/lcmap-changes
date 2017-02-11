@@ -10,23 +10,22 @@
   See also:
   * `dev/lcmap/clownfish/user.clj` for REPL-driven development."
   (:require
-            [clojure.tools.logging :as log]
-            [lcmap.clownfish.system :as system])
+   [clojure.tools.logging :as log]
+   [lcmap.clownfish.system :as system])
   (:gen-class))
 
 (def environment
- "Creates environment map from the system environment"
- {:http-port      (System/getenv "LC_HTTP_PORT")
-  :event-host     (System/getenv "LC_RABBIT_HOST")
-  :event-port     (System/getenv "LC_RABBIT_PORT")
-  :db-keyspace    (System/getenv "LC_DB_KEYSPACE")
-  :db-url         (System/getenv "LC_DB_CONTACT_POINTS")
-  :db-user        (System/getenv "LC_DB_USERNAME")
-  :db-pass        (System/getenv "LC_DB_PASSWORD")
-  :exchange       (System/getenv "LC_EXCHANGE")
-  :queue          (System/getenv "LC_QUEUE")
-  :tile-specs-url (System/getenv "LC_TILE_SPECS_URL")})
-
+  "Creates environment map from the system environment"
+  {:http-port      (System/getenv "LC_HTTP_PORT")
+   :event-host     (System/getenv "LC_RABBIT_HOST")
+   :event-port     (System/getenv "LC_RABBIT_PORT")
+   :db-keyspace    (System/getenv "LC_DB_KEYSPACE")
+   :db-url         (System/getenv "LC_DB_CONTACT_POINTS")
+   :db-user        (System/getenv "LC_DB_USERNAME")
+   :db-pass        (System/getenv "LC_DB_PASSWORD")
+   :exchange       (System/getenv "LC_EXCHANGE")
+   :queue          (System/getenv "LC_QUEUE")
+   :tile-specs-url (System/getenv "LC_TILE_SPECS_URL")})
 
 (defn -main
   "Start the server"

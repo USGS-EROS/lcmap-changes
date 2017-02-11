@@ -36,8 +36,8 @@
                 :tile_update_requested (str (time/now))
                 :inputs_url (alg/inputs data)}]
     (->> ticket (announce)
-                (hayt/values)
-                (hayt/insert :results)
-                (db/execute))
+         (hayt/values)
+         (hayt/insert :results)
+         (db/execute))
     (log/infof "ticket created: %s")
     ticket))
