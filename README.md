@@ -153,7 +153,36 @@ LCMAP-Changes is configurable with the following environment variables
 | `LC_TILE_SPECS_URL` | URL where all tile specs can be loaded from. |
 
 ## Integrating With
-Document message exchanges across AMQP here.
+Workers can be tied in with LCMAP-Changes to fulfil work tickets generated when an algorithm result has not yet been executed and stored.  An AMQP broker with persistent messaging is used to achieve loose coupling and reliable communication between the LCMAP-Changes server and workers.
 
+Actual exchanges and queues are unimportant to this specification, as LCMAP-Changes requires those to be provided as environment variables.
+
+### Work Tickets
+##### Content-Type:  ```application/json``` 
+##### Routing-Key:   ```change-detection``` 
+##### Body:
+```
+{"tile_x": Integer,
+ "tile_y": Integer,
+ "algorithm": "String",
+ "x": Integer,
+ "y": Integer,
+ "tile_update_requested": "ISO8601 Datetime String",
+ "inputs_url": "HTTP(s) url template String"}
+ ```
+ 
+### Algorithm Results
+##### Content-Type:  ```application/json``` 
+##### Routing-Key:   ```change-detection-result``` 
+##### Body:
+``` 
+{"algorithm": "String",
+ "x": Integer,
+ "y": Integer,
+ "result": "Algorithm results, String",
+ "result_md5": "MD5 String of the algorithm result",
+ "result_ok": Boolean,
+ "result_produced" "ISO8601 Datetime String"}
+ ```
 ## Contributing
 TBD
