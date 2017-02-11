@@ -1,8 +1,9 @@
-[![Build Status](https://travis-ci.org/USGS-EROS/lcmap-landsat.svg?branch=develop)](https://travis-ci.org/USGS-EROS/lcmap-changes).
-# lcmap-changes
+![Build Status](https://travis-ci.org/USGS-EROS/lcmap-changes.svg?branch=develop)
+
+# LCMAP-Changes
 HTTP endpoint for LCMAP change detection.
 
-### Usage
+## Usage
 #### Get Change Results
 ```bash
   # HTTP GET hostname:port/<algorithm-and-version>/x/y?refresh=true|false
@@ -64,7 +65,6 @@ HTTP endpoint for LCMAP change detection.
       "y": 456
   }
   ```
-
 
 #### List available algorithms
   ```bash
@@ -133,14 +133,27 @@ Server: Jetty(9.2.10.v20150310)
   }
   ```
 
-### Installation
+## Installation
 TBD
 
-### Configuration
-TBD
+## Configuration
+LCMAP-Changes is configurable with the following environment variables
 
-### Integrating With
+| Variable | Description |
+| --- | --- |
+| `LC_HTTP_PORT` | LCMAP-Changes HTTP Server Listen Port |
+| `LC_RABBIT_HOST` | RabbitMQ Host |
+| `LC_RABBIT_PORT` | RabbitMQ Port |
+| `LC_DB_KEYSPACE` | Cassandra keyspace for LCMAP-Changes |
+| `LC_DB_CONTACT_POINTS` | Space seperated list of hostname:port of Cassandra servers |
+| `LC_DB_USERNAME` | Cassandra username |
+| `LC_DB_PASSWORD` | Cassandra password |
+| `LC_EXCHANGE` | Exchange for LCMAP-Changes to publish messages |
+| `LC_QUEUE` | Queue for LCMAP-Changes to listen for messages |
+| `LC_TILE_SPECS_URL` | URL where all tile specs can be loaded from. |
+
+## Integrating With
 Document message exchanges across AMQP here.
 
-### Contributing
+## Contributing
 TBD
