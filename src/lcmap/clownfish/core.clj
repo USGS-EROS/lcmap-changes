@@ -16,16 +16,16 @@
 
 (def environment
  "Creates environment map from the system environment"
- {:http-port      (System/getenv "CLOWNFISH_HTTP_PORT")
-  :event-host     (System/getenv "CLOWNFISH_RABBIT_HOST")
-  :event-port     (System/getenv "CLOWNFISH_RABBIT_PORT")
-  :db-keyspace    (System/getenv "CLOWNFISH_DB_KEYSPACE")
-  :db-url         (System/getenv "CLOWNFISH_DB_CONTACT_POINTS")
-  :db-user        (System/getenv "CLOWNFISH_DB_USERNAME")
-  :db-pass        (System/getenv "CLOWNFISH_DB_PASSWORD")
-  :exchange       (System/getenv "CLOWNFISH_EXCHANGE")
-  :queue          (System/getenv "CLOWNFISH_QUEUE")
-  :tile-specs-url (System/getenv "CLOWNFISH_TILE_SPECS_URL")})
+ {:http-port      (System/getenv "LC_HTTP_PORT")
+  :event-host     (System/getenv "LC_RABBIT_HOST")
+  :event-port     (System/getenv "LC_RABBIT_PORT")
+  :db-keyspace    (System/getenv "LC_DB_KEYSPACE")
+  :db-url         (System/getenv "LC_DB_CONTACT_POINTS")
+  :db-user        (System/getenv "LC_DB_USERNAME")
+  :db-pass        (System/getenv "LC_DB_PASSWORD")
+  :exchange       (System/getenv "LC_EXCHANGE")
+  :queue          (System/getenv "LC_QUEUE")
+  :tile-specs-url (System/getenv "LC_TILE_SPECS_URL")})
 
 
 (defn -main
