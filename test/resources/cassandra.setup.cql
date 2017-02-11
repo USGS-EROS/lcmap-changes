@@ -1,3 +1,6 @@
+-- =============================================================================
+-- Schema for unit tests
+-- =============================================================================
 CREATE KEYSPACE IF NOT EXISTS lcmap_changes_unit
 WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1};
 

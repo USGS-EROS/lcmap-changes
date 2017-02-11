@@ -7,7 +7,7 @@
             ;; have to require server to include server state
             ;; otherwise it will never be started
             [lcmap.clownfish.server :as server]
-            [lcmap.clownfish.shared :refer [http-host with-system req]]))
+            [lcmap.clownfish.shared :refer [with-system req]]))
 
 (deftest changes-health-resource
   (with-system

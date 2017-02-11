@@ -9,7 +9,7 @@
             [clojure.tools.logging :as log]
             [langohr.basic :as lb]
             [langohr.consumers :as lcons]
-            [lcmap.clownfish.config :refer [config]]
+            [lcmap.clownfish.configuration :refer [config]]
             [lcmap.clownfish.db :as db :refer [db-session]]
             [lcmap.clownfish.event :as event :refer [amqp-channel]]
             [lcmap.clownfish.middleware :refer [wrap-authenticate

@@ -1,29 +1,37 @@
 (ns lcmap.clownfish.shared
-  (:require [clojure.edn :as edn]
+  (:require [again.core :as again]
+            [clojure.edn :as edn]
+            [clojure.stacktrace :as stacktrace]
             [clojure.tools.logging :as log]
             [clojure.java.io :as io]
-            [lcmap.clownfish.config :as config]
-            [mount.core :as mount]
+            [lcmap.clownfish.configuration :refer [config]]
+            [lcmap.clownfish.setup.initialize :as initialize]
+            [lcmap.clownfish.setup.finalize :as finalize]
+            [lcmap.clownfish.system :as system]
             [org.httpkit.client :as http]))
-
-(def http-port (-> (io/resource "lcmap-changes.edn")
-                   (slurp)
-                   (edn/read-string)
-                   (get-in [:http :port])))
-
-(def http-host (str "http://localhost:" http-port))
 
 (defmacro with-system
   "Start and stop the system, useful for integration tests."
   [& body]
-  `(let [cfg# (edn/read-string (slurp (io/resource "lcmap-changes.edn")))]
-     (log/debugf "starting test system with config: %s" cfg#)
-     (mount/start (mount/with-args {:config cfg#}))
+  `(let [env#      (edn/read-string (slurp (io/resource "environment.edn")))
+         strategy# (again/max-retries 1 (again/constant-strategy 5000))]
+     (log/debugf "starting test system with environment: %s" env#)
      (try
-       (do ~@body)
+       ;; start from a clean state every time
+       (initialize/cassandra env#)
+       (initialize/rabbitmq env#)
+       (system/start env# strategy#)
+       (catch Exception e#
+         (log/errorf "Cannot start test system: %s" (stacktrace/root-cause e#))
+         (System/exit 1)))
+     (try
+       (let [~'http-port (get-in config [:http :port])
+             ~'http-host (str "http://localhost:" ~'http-port)]
+         ~@body)
        (finally
          (log/debug "Stopping test system")
-         (mount/stop)))))
+         (system/stop)
+         (finalize/cassandra env#)))))
 
 (defn req
   "Convenience function for making HTTP requests."
