@@ -25,6 +25,8 @@
          (log/errorf "Cannot start test system: %s" (stacktrace/root-cause e#))
          (System/exit 1)))
      (try
+       ;; this seems like a really bad idea.  Refactor http-port
+       ;; and http-host out of this macro body.  --dvh 2-14-17
        (let [~'http-port (get-in config [:http :port])
              ~'http-host (str "http://localhost:" ~'http-port)]
          ~@body)

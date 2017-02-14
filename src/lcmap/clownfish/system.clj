@@ -13,8 +13,8 @@
            (.addShutdownHook (Runtime/getRuntime)
                              (Thread. #(mount/stop) "shutdown-handler"))))
 
-(def default-retry-strategy (again/max-retries 10
-                                               (again/constant-strategy 5000)))
+(def default-retry-strategy
+  (again/max-retries 10 (again/constant-strategy 5000)))
 
 (defn start
   ([environment]

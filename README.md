@@ -141,16 +141,16 @@ LCMAP-Changes is configurable with the following environment variables
 
 | Variable | Description |
 | --- | --- |
-| `LC_HTTP_PORT` | LCMAP-Changes HTTP Server Listen Port |
-| `LC_RABBIT_HOST` | RabbitMQ Host |
-| `LC_RABBIT_PORT` | RabbitMQ Port |
-| `LC_DB_KEYSPACE` | Cassandra keyspace for LCMAP-Changes |
-| `LC_DB_CONTACT_POINTS` | Space seperated list of hostname:port of Cassandra servers |
-| `LC_DB_USERNAME` | Cassandra username |
-| `LC_DB_PASSWORD` | Cassandra password |
-| `LC_EXCHANGE` | Exchange for LCMAP-Changes to publish messages |
-| `LC_QUEUE` | Queue for LCMAP-Changes to listen for messages |
-| `LC_TILE_SPECS_URL` | URL where all tile specs can be loaded from. |
+| `CLOWNFISH_HTTP_PORT` | LCMAP-Changes HTTP Server Listen Port |
+| `CLOWNFISH_RABBIT_HOST` | RabbitMQ Host |
+| `CLOWNFISH_RABBIT_PORT` | RabbitMQ Port |
+| `CLOWNFISH_DB_KEYSPACE` | Cassandra keyspace for LCMAP-Changes |
+| `CLOWNFISH_DB_CONTACT_POINTS` | Space seperated list of hostname:port of Cassandra servers |
+| `CLOWNFISH_DB_USERNAME` | Cassandra username |
+| `CLOWNFISH_DB_PASSWORD` | Cassandra password |
+| `CLOWNFISH_EXCHANGE` | Exchange for LCMAP-Changes to publish messages |
+| `CLOWNFISH_QUEUE` | Queue for LCMAP-Changes to listen for messages |
+| `CLOWNFISH_TILE_SPECS_URL` | URL where all tile specs can be loaded from. |
 
 ## Integrating With
 Document message exchanges across AMQP here.
