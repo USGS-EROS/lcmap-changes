@@ -169,7 +169,7 @@ Actual exchanges and queues are unimportant to this specification, as LCMAP-Chan
  "x": Integer,
  "y": Integer,
  "tile_update_requested": "ISO8601 Datetime String",
- "inputs_url": "HTTP(s) url template String"}
+ "inputs_url": "HTTP(s) url for obtaining inputs String"}
  ```
  
 ### Algorithm Results - Sent by Workers to LCMAP-Changes
