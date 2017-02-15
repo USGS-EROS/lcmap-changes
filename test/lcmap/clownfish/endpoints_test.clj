@@ -26,15 +26,20 @@
         (is (= 0 (count body)))
         (is (coll? body))))
 
-    (testing "add algorithm - bad input_url_template"
-      (let [body    {:enabled true
-                     :blah-inputs_url_template "http://host:port/context"}
-            headers {"Accept" "application/json"
-                     "Content-Type" "application/json"}
-            resp (req :put (str http-host "/algorithm/bad-input-url")
-                      :body (json/encode body)
-                      :headers headers)]
-        ()))
+    (testing "add algorithm - bad bodies"
+      (let [headers {"Accept" "application/json"
+                     "Content-Type" "application/json"}]
+          (doseq [body [{:enabled true :bad-inputs_url_template "http://host"}
+                        {:not-enabled true :inputs_url_template "http://host"}
+                        {:enabled "string" :inputs_url_template "http://host"}]]
+              (let [response (req :put (str http-host "/algorithm/bad")
+                                  :body (json/encode body)
+                                  :headers headers)
+                    status (:status response)]
+                (when (not (contains? #{403 500} status))
+                  (log/errorf "Error in add algorithm-bad bodies")
+                  (log/errorf "Response:%s" response))
+                (is (contains? #{403 500} status))))))
 
     (testing "add good algorithms"
       (let [resp (req :get (str http-host "/algorithms"))]

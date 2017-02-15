@@ -136,9 +136,28 @@ Server: Jetty(9.2.10.v20150310)
 ## Installation
 Not yet on clojars.  A Docker image is available: ```docker pull usgseros/lcmap-changes```
 
+## Running (WIP)
+
+### Dev profile
+```
+user@machine:~/projects/lcmap/lcmap-changes$ make docker-deps-up-nodaemon
+# In another tab
+user@machine:~/projects/lcmap/lcmap-changes$ lein repl
+user=> (require '[lcmap.clownfish.setup.initialize :as initialize])  
+user=> (initialize/cassandra environment)
+user=> (initialize/rabbitmq environment)
+user=> (start)
+```
+
+### Ops profile (WIP)
+* Set environment variables per Configuration section
+* ```lein run```
+* Alternative, ```lein uberjar``` then ```java -jar target/jar-file-name.jar```
 
 ## Configuration
-LCMAP-Changes is configurable with the following environment variables
+LCMAP-Changes is configurable with the following environment variables.  This
+is only necessary when not running in the lein dev or lein test profiles as the
+environment is internally defined in those cases.
 
 | Variable | Description |
 | --- | --- |
@@ -159,8 +178,8 @@ Workers can be tied in with LCMAP-Changes to fulfil work tickets generated when 
 Actual exchanges and queues are unimportant to this specification, as LCMAP-Changes requires those to be provided as environment variables.
 
 ### Work Tickets - Sent by LCMAP-Changes
-##### Content-Type:  ```application/json``` 
-##### Routing-Key:   ```change-detection``` 
+##### Content-Type:  ```application/json```
+##### Routing-Key:   ```change-detection```
 ##### Body:
 ```
 {"tile_x": Integer,
@@ -171,12 +190,12 @@ Actual exchanges and queues are unimportant to this specification, as LCMAP-Chan
  "tile_update_requested": "ISO8601 Datetime String",
  "inputs_url": "HTTP(s) url template String"}
  ```
- 
+
 ### Algorithm Results - Sent by Workers to LCMAP-Changes
-##### Content-Type:  ```application/json``` 
-##### Routing-Key:   ```change-detection-result``` 
+##### Content-Type:  ```application/json```
+##### Routing-Key:   ```change-detection-result```
 ##### Body:
-``` 
+```
 {"algorithm": "String",
  "x": Integer,
  "y": Integer,
