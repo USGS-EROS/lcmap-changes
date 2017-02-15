@@ -158,7 +158,7 @@ Workers can be tied in with LCMAP-Changes to fulfil work tickets generated when 
 
 Actual exchanges and queues are unimportant to this specification, as LCMAP-Changes requires those to be provided as environment variables.
 
-### Work Tickets - Sent by LCMAP-Changes
+### Work Tickets - Sent by LCMAP-Changes to LCMAP-Change-Worker
 ##### Content-Type:  ```application/json``` 
 ##### Routing-Key:   ```change-detection``` 
 ##### Body:
@@ -172,7 +172,7 @@ Actual exchanges and queues are unimportant to this specification, as LCMAP-Chan
  "inputs_url": "HTTP(s) url for obtaining inputs, String"}
  ```
  
-### Algorithm Results - Sent by Workers to LCMAP-Changes
+### Algorithm Results - Sent by LCMAP-Change-Worker to LCMAP-Changes
 ##### Content-Type:  ```application/json``` 
 ##### Routing-Key:   ```change-detection-result``` 
 ##### Body:
