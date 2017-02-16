@@ -12,6 +12,20 @@
 (def json-header {"Accept" "application/json"
                   "Content-Type" "application/json"})
 
+(defn upsert-algorithm
+  [http-host {:keys [algorithm enabled inputs_url_template] :as all}]
+  (req :put (str http-host "/algorithm/" algorithm)
+       :body (json/encode all)
+       :headers json-header))
+
+(defn get-algorithm
+  [http-host algorithm]
+  (req :get (str http-host "/algorithm/" algorithm)))
+
+(defn get-algorithms
+  [http-host]
+  (req :get (str http-host "/algorithms")))
+
 (deftest changes-health-resource
   (with-system
     (testing "health check"
@@ -43,23 +57,23 @@
                 (is (contains? #{403 500} status)))))
 
     (testing "add good algorithm"
-      (let [body   {:enabled false :inputs_url_template "http://host"}
-            resp   (req :put (str http-host "/algorithm/good")
-                        :body (json/encode body)
-                        :headers json-header)
+      (let [body   {:algorithm "good"
+                    :enabled false
+                    :inputs_url_template "http://host"}
+            resp   (upsert-algorithm http-host body)
             status (:status resp)]
           (is (= 202 status))))
 
     (testing "update algorithm")
-    (let [body     {:enabled true :inputs_url_template "http://anotherhost"}
-          response (req :put (str http-host "/algorithm/good")
-                        :body (json/encode body)
-                        :headers json-header)
+    (let [body     {:algorithm "good"
+                    :enabled true
+                    :inputs_url_template "http://anotherhost"}
+          response (upsert-algorithm http-host body)
           status   (:status response)]
         (is (= 202 status)))
 
     (testing "get algorithm"
-      (let [resp     (req :get (str http-host "/algorithm/good"))
+      (let [resp     (get-algorithm http-host "good")
             status   (:status resp)
             body     (:body resp)
             expected {:algorithm "good"
@@ -69,7 +83,7 @@
         (is (= (json/decode body true) expected))))
 
     (testing "get algorithms"
-      (let [resp   (req :get (str http-host "/algorithms"))
+      (let [resp   (get-algorithms http-host)
             status (:status resp)
             body   (:body resp)
             expected [{:algorithm "good"
@@ -80,6 +94,12 @@
 
 (deftest results
   (with-system
+    ;; put a good alg in the system
+    (upsert-algorithm http-host {:algorithm "test-alg"
+                                 :enabled true
+                                 :inputs_url_template
+                                 "http://host/{algorithm}/{x}/{y}/{now}"})
+
     (testing "run non-existent algorithm")
     (testing "schedule existing algorithm")
     (testing "schedule same algorithm, get ticket")
