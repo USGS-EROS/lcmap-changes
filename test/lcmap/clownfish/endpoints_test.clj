@@ -104,9 +104,23 @@
         (is (= 422 (:status resp)))))
 
     (testing "schedule existing algorithm, no results exist"
-      (let [body {:algorithm "test-alg" :x 123 :y 456}
-            resp (get-results http-host body)]
-        (is (= 202 (:status resp)))))
+      (let [body       {:algorithm "test-alg" :x 123 :y 456}
+            resp       (log/spy :debug (get-results http-host body))
+            ticket     (json/decode (:body resp) true)
+            expected   {:tile_x -585
+                        :tile_y 2805
+                        :x 123
+                        :y 456
+                        :tile_update_requested "2017-02-16T21:34:19.881Z"
+                        :algorithm "test-alg"
+                        :inputs_url "http://host/{algorithm}/{x}/{y}/{now}"
+                        :refresh false
+                        :algorithm-available true
+                        :source-data-available true}]
+        (is (= 202 (:status resp)))
+        (is (= (type (:tile_update_requested ticket)) java.lang.String))
+        (is (= (dissoc expected :tile_update_requested)
+               (dissoc ticket :tile_update_requested)))))
 
     (testing "schedule same algorithm, get ticket")
     (testing "retrieve algorithm results once available")
