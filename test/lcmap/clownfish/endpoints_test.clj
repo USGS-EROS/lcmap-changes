@@ -12,6 +12,7 @@
 (def json-header {"Accept" "application/json"
                   "Content-Type" "application/json"})
 
+;; low level clients for resources
 (defn upsert-algorithm
   [http-host {:keys [algorithm enabled inputs_url_template] :as all}]
   (req :put (str http-host "/algorithm/" algorithm)
@@ -26,17 +27,22 @@
   [http-host]
   (req :get (str http-host "/algorithms")))
 
+(defn get-results
+  [http-host {:keys [algorithm x y]}]
+  (log/spy :trace (req :get (str http-host "/results/" algorithm "/" x "/" y))))
+
+;; test code
 (deftest changes-health-resource
   (with-system
     (testing "health check"
-      (let [resp (log/spy (req :get (str http-host "/health")
-                               :headers {"Accept" "*/*"}))]
+      (let [resp (log/spy :trace (req :get (str http-host "/health")
+                                      :headers {"Accept" "*/*"}))]
         (is (= 200 (:status resp)))))))
 
 (deftest algorithms
   (with-system
     (testing "no algorithms defined"
-      (let [resp (log/spy :debug (req :get (str http-host "/algorithms")
+      (let [resp (log/spy :trace (req :get (str http-host "/algorithms")
                                       :headers {"Accept" "application/json"}))
             body (json/decode (:body resp))]
         (is (= 200 (:status resp)))
@@ -51,46 +57,37 @@
                                 :body (json/encode body)
                                 :headers json-header)
                   status (:status response)]
-                (when (not (contains? #{403 500} status))
-                    (log/errorf "Error in add algorithm-bad bodies")
-                    (log/errorf "Response:%s" response))
-                (is (contains? #{403 500} status)))))
+                (is (= 403 status)))))
 
     (testing "add good algorithm"
       (let [body   {:algorithm "good"
                     :enabled false
                     :inputs_url_template "http://host"}
-            resp   (upsert-algorithm http-host body)
-            status (:status resp)]
-          (is (= 202 status))))
+            resp   (upsert-algorithm http-host body)]
+          (is (= 202 (:status resp)))))
 
     (testing "update algorithm")
-    (let [body     {:algorithm "good"
-                    :enabled true
-                    :inputs_url_template "http://anotherhost"}
-          response (upsert-algorithm http-host body)
-          status   (:status response)]
-        (is (= 202 status)))
+    (let [body {:algorithm "good"
+                :enabled true
+                :inputs_url_template "http://anotherhost"}
+          resp (upsert-algorithm http-host body)]
+        (is (= 202 (:status resp))))
 
     (testing "get algorithm"
       (let [resp     (get-algorithm http-host "good")
-            status   (:status resp)
-            body     (:body resp)
             expected {:algorithm "good"
                       :enabled true
                       :inputs_url_template "http://anotherhost"}]
-        (is (= 200 status))
-        (is (= (json/decode body true) expected))))
+        (is (= 200 (:status resp)))
+        (is (= (json/decode (:body resp) true) expected))))
 
     (testing "get algorithms"
       (let [resp   (get-algorithms http-host)
-            status (:status resp)
-            body   (:body resp)
             expected [{:algorithm "good"
                        :enabled true
                        :inputs_url_template "http://anotherhost"}]]
-       (is (= 200 status))
-       (is (= (json/decode body true) expected))))))
+       (is (= 200 (:status resp)))
+       (is (= (json/decode (:body resp) true) expected))))))
 
 (deftest results
   (with-system
@@ -100,7 +97,17 @@
                                  :inputs_url_template
                                  "http://host/{algorithm}/{x}/{y}/{now}"})
 
-    (testing "run non-existent algorithm")
-    (testing "schedule existing algorithm")
+    (testing "schedule non-existent algorithm"
+      (let [body {:algorithm "does-not-exist" :x 123 :y 456}
+            resp (get-results http-host body)]
+        ;; should return unprocessable entity, HTTP 422
+        (is (= 422 (:status resp)))))
+
+    (testing "schedule existing algorithm, no results exist"
+      (let [body {:algorithm "test-alg" :x 123 :y 456}
+            resp (get-results http-host body)]
+        (is (= 202 (:status resp)))))
+
     (testing "schedule same algorithm, get ticket")
-    (testing "retrieve algorithm results once available")))
+    (testing "retrieve algorithm results once available")
+    (testing "reschedule algorithm when results already exist")))

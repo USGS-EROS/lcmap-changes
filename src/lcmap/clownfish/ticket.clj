@@ -39,5 +39,5 @@
          (hayt/values)
          (hayt/insert :results)
          (db/execute))
-    (log/infof "ticket created: %s")
+    (log/infof "ticket created: %s" ticket)
     ticket))

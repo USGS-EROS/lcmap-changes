@@ -46,7 +46,7 @@
 (defn to-json
   "Encode response body as JSON."
   [response]
-  (log/debug "responding with json")
+  (log/debugf "to-json response parameter: %s" response)
   (-> response
       (update :body json/encode)
       (assoc-in [:headers "Content-Type"] "application/json")))
