@@ -118,6 +118,7 @@
                         :algorithm-available true
                         :source-data-available true}]
         (is (= 202 (:status resp)))
+        ;; dont know when 'now' actually is so cant compare values, only type
         (is (= (type (:tile_update_requested ticket)) java.lang.String))
         (is (= (dissoc expected :tile_update_requested)
                (dissoc ticket :tile_update_requested)))))
@@ -145,9 +146,11 @@
                         :result_md5 nil}]
 
         (is (= 202 (:status resp)))
+        ;; dont know when 'now' actually is so cant compare values, only type
         (is (= (type (:tile_update_requested ticket)) java.lang.String))
         (is (= (dissoc expected :tile_update_requested)
                (dissoc ticket :tile_update_requested)))))
 
+    (testing "consume ticket from rabbitmq, send change-detection-response")
     (testing "retrieve algorithm results once available")
     (testing "reschedule algorithm when results already exist")))
