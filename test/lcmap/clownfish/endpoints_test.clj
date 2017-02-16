@@ -122,6 +122,32 @@
         (is (= (dissoc expected :tile_update_requested)
                (dissoc ticket :tile_update_requested)))))
 
-    (testing "schedule same algorithm, get ticket")
+    (testing "schedule same algorithm, get ticket"
+      (let [body       {:algorithm "test-alg" :x 123 :y 456}
+            resp       (log/spy :debug (get-results http-host body))
+            ticket     (json/decode (:body resp) true)
+            expected   {:tile_x -585
+                        :tile_y 2805
+                        :x 123
+                        :y 456
+                        :result_ok nil
+                        :algorithm "test-alg"
+                        :inputs_url "http://host/{algorithm}/{x}/{y}/{now}"
+                        :refresh false
+                        :algorithm-available true
+                        :inputs_md5 nil
+                        :source-data-available true
+                        :result nil
+                        :tile_update_requested "2017-02-16T22:28:20Z"
+                        :tile_update_began nil
+                        :tile_update_ended nil
+                        :result_produced nil
+                        :result_md5 nil}]
+
+        (is (= 202 (:status resp)))
+        (is (= (type (:tile_update_requested ticket)) java.lang.String))
+        (is (= (dissoc expected :tile_update_requested)
+               (dissoc ticket :tile_update_requested)))))
+
     (testing "retrieve algorithm results once available")
     (testing "reschedule algorithm when results already exist")))

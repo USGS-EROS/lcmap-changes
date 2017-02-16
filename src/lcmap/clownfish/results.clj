@@ -35,7 +35,6 @@
                        :result_ok result_ok
                        :result_produced result_produced}]
     (db/execute (hayt/insert :results (hayt/values change-result)))
-
     change-result))
 
 ;;; TODO - replace with implementation

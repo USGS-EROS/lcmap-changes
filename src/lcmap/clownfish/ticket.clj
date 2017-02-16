@@ -33,7 +33,7 @@
                 :algorithm algorithm
                 :x x
                 :y y
-                :tile_update_requested (str (time/now))
+                :tile_update_requested (tc/to-long (time/now))
                 :inputs_url (alg/inputs data)}]
     (->> ticket (announce)
          (hayt/values)
@@ -41,4 +41,4 @@
          (db/execute))
     (log/info "ticket created")
     (log/debugf "ticket created: %s" ticket)
-    ticket))
+    (update ticket :tile_update_requested #(tc/to-string %))))
