@@ -1,4 +1,4 @@
-(ns lcmap.clownfish.endpoints-test
+(ns lcmap.clownfish.specifications-test
   "Tests from the end user's view"
   (:require [clojure.java.io :as io]
             [clojure.test :refer :all]
