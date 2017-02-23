@@ -18,7 +18,7 @@
 
 (defn start
   ([environment]
-   (start default-retry-strategy))
+   (start environment default-retry-strategy))
 
   ([environment startup-retry-strategy]
    (again/with-retries startup-retry-strategy
