@@ -63,4 +63,5 @@
   :main lcmap.clownfish.core
   :target-path "target/%s/"
   :compile-path "%s/classes"
+  :jvm-opts ["-Xmx512m" "-server"]
   :repl-options {:init-ns user})
