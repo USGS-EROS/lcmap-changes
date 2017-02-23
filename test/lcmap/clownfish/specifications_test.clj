@@ -221,7 +221,7 @@
                     {:content-type "application/json" :persistent true})
         ;; sleep this for just a bit so the server has time to consume and
         ;; persist the message we just sent.
-        (Thread/sleep 10)))
+        (Thread/sleep 1000)))
 
     (testing "retrieve algorithm results once available"
       (let [body     {:algorithm "test-alg" :x 123 :y 456}
