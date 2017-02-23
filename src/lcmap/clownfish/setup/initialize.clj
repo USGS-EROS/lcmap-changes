@@ -57,14 +57,12 @@
                     (mount/start #'lcmap.clownfish.configuration/config
                                  #'lcmap.clownfish.db/db-cluster
                                  #'lcmap.clownfish.setup.cassandra/setup
-                                 (mount/with-args {:environment environment}))
-                    (mount/stop  #'lcmap.clownfish.configuration/config
-                                 #'lcmap.clownfish.db/db-cluster
-                                 #'lcmap.clownfish.setup.cassandra/setup))
+                                 (mount/with-args {:environment environment})))
     (catch Exception e
       (stacktrace/print-stack-trace e)
       (log/errorf "error initializing cassandra: %s"
-                  (stacktrace/root-cause e)))))
+                  (stacktrace/root-cause e)))
+    (finally (mount/stop))))
 
 (defn rabbitmq
   "Manual operation to set up rabbit queues, exchanges and bindings."
@@ -76,12 +74,9 @@
                                  #'event/amqp-connection
                                  #'event/amqp-channel
                                  #'lcmap.clownfish.setup.rabbitmq/setup
-                                 (mount/with-args {:environment environment}))
-                    (mount/stop #'lcmap.clownfish.configuration/config
-                                #'lcmap.clownfish.event/amqp-connection
-                                #'lcmap.clownfish.event/amqp-channel
-                                #'lcmap.clownfish.setup.rabbitmq/setup))
+                                 (mount/with-args {:environment environment})))
     (catch Exception e
       (stacktrace/print-stack-trace e)
       (log/errorf "error initializing event system: %s"
-                  (stacktrace/root-cause e)))))
+                  (stacktrace/root-cause e)))
+    (finally (mount/stop))))

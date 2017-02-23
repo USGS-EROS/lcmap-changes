@@ -22,11 +22,9 @@
   ""
   [body]
   (log/debug "req - decoding as JSON")
-  (->> body
-       (slurp)
-       (json/decode)
-       (transform-keys ->snake_case_keyword)))
-
+  (transform-keys #(->snake_case_keyword % :separator \-)
+                  (json/decode (slurp body))))
+  
 (defn prepare-with
   "Request transform placeholder."
   [request]
@@ -46,7 +44,7 @@
 (defn to-json
   "Encode response body as JSON."
   [response]
-  (log/debug "responding with json")
+  (log/debugf "to-json response parameter: %s" response)
   (-> response
       (update :body json/encode)
       (assoc-in [:headers "Content-Type"] "application/json")))

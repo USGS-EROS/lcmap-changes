@@ -21,7 +21,9 @@
 (defn decode-message
   "Convert byte payload to JSON or nil."
   [metadata payload]
-  (transform-keys ->snake_case_keyword (json/decode (String. payload "UTF-8"))))
+  (transform-keys
+     #(->snake_case_keyword % :separator \-)
+     (json/decode (String. payload "UTF-8"))))
 
 (dire/with-handler! #'decode-message
   java.lang.Exception
