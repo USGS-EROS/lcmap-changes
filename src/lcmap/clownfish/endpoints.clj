@@ -22,11 +22,9 @@
   ""
   [body]
   (log/debug "req - decoding as JSON")
-  (->> body
-       (slurp)
-       (json/decode)
-       (transform-keys ->snake_case_keyword)))
-
+  (transform-keys #(->snake_case_keyword % :separator \-)
+                  (json/decode (slurp body))))
+  
 (defn prepare-with
   "Request transform placeholder."
   [request]

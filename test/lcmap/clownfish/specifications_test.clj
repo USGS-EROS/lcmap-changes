@@ -1,6 +1,8 @@
 (ns lcmap.clownfish.specifications-test
   "Tests from the end user's view"
-  (:require [clojure.java.io :as io]
+  (:require [clj-time.core :as time]
+            [clj-time.coerce :as tc]
+            [clojure.java.io :as io]
             [clojure.test :refer :all]
             [clojure.tools.logging :as log]
             [cheshire.core :as json]
@@ -112,12 +114,15 @@
        "/" (:y ticket)
        "/" timestamp-regex))
 
-(defn tickets-ok?
-  "Compares two tickets minus inputs_url and tile_update_requested, which
-   are non-deterministic due to timestamp information"
+(def ignored-keys [:tile_update_requested :tile_update_began :tile_update_ended
+                   :inputs_url :result_produced])
+
+(defn results-ok?
+  "Compares two results (or tickets) minus inputs_url, tile_update_requested and
+   result_produced which are non-deterministic due to timestamp information"
   [expected actual]
-  (= (dissoc expected :tile_update_requested :inputs_url)
-     (dissoc actual :tile_update_requested :inputs_url)))
+  (= (log/spy :info (apply dissoc expected ignored-keys))
+     (log/spy :info (apply dissoc actual ignored-keys))))
 
 (defn inputs-url-ok?
   "Determine if inputs_url conforms to expected structure after having
@@ -125,10 +130,10 @@
   [ticket]
   (re-matches (re-pattern (test-url-regex ticket)) (:inputs_url ticket)))
 
-(defn tile-update-requested-ok?
-  "Determines if the tile_update_requested field conforms to expected structure"
-  [ticket]
-  (re-matches (re-pattern timestamp-regex) (:tile_update_requested ticket)))
+(defn date-timestamp?
+  "Determines if a val is a datetimestamp that conforms to expected structure"
+  [ts]
+  (re-matches (re-pattern timestamp-regex) ts))
 
 (deftest results
   (with-system
@@ -158,9 +163,9 @@
                         :algorithm-available true
                         :source-data-available true}]
         (is (= 202 (:status resp)))
-        (is (tile-update-requested-ok? ticket))
+        (is (date-timestamp? (:tile_update_requested ticket)))
         (is (inputs-url-ok? ticket))
-        (is (tickets-ok? expected ticket))))
+        (is (results-ok? expected ticket))))
 
     (testing "schedule same algorithm, get ticket"
       (let [body     {:algorithm "test-alg" :x 123 :y 456}
@@ -184,9 +189,9 @@
                       :result_produced nil
                       :result_md5 nil}]
         (is (= 202 (:status resp)))
-        (is (tile-update-requested-ok? ticket))
+        (is (date-timestamp? (:tile_update_requested ticket)))
         (is (inputs-url-ok? ticket))
-        (is (tickets-ok? expected ticket))))
+        (is (results-ok? expected ticket))))
 
     (testing "consume ticket from rabbitmq, send change-detection-response"
       (let [[metadata payload] (lb/get amqp-channel "unit.lcmap.changes.worker")
@@ -198,20 +203,50 @@
                       :y 456
                       :tile_update_requested "{{now}} can't be determined"
                       :inputs_url "{{now}} can't be determined"}]
-        (is (tile-update-requested-ok? body))
+        (is (date-timestamp? (:tile_update_requested body)))
         (is (inputs-url-ok? body))
-        (is (tickets-ok? expected body))
+        (is (results-ok? expected body))
         ;; send response to server exchange to mock up results.  The
         ;; change results should wind up in the db
         (lb/publish amqp-channel
                     "unit.lcmap.changes.worker"
                     "change-detection-result"
-                    (json/encode (merge body {:results "some test results"
-                                              :results_ok true}))
+                    (->> {:inputs_md5 (digest/md5 "dummy inputs")
+                          :result "some test results"
+                          :result_md5 (digest/md5 "some test results")
+                          :result_produced (tc/to-string (time/now))
+                          :result_ok true}
+                         (merge body)
+                         (json/encode))
                     {:content-type "application/json" :persistent true})
         ;; sleep this for just a bit so the server has time to consume and
         ;; persist the message we just sent.
         (Thread/sleep 5)))
 
-    (testing "retrieve algorithm results once available")
+    (testing "retrieve algorithm results once available"
+      (let [body     {:algorithm "test-alg" :x 123 :y 456}
+            resp     (get-results http-host body)
+            result   (json/decode (:body resp) true)
+            expected {:tile_x -585
+                      :tile_y 2805
+                      :algorithm "test-alg"
+                      :x 123
+                      :y 456
+                      :refresh false
+                      :tile_update_requested "{{now}} can't be determined"
+                      :tile_update_began "{{now}} can't be determined"
+                      :tile_update_ended "{{now}} can't be determined"
+                      :inputs_url "{{now}} can't be determined"
+                      :inputs_md5 (digest/md5 "dummy inputs")
+                      :result "some test results"
+                      :result_md5 (digest/md5 "some test results")
+                      :result_produced "{{now}} can't be determined"
+                      :result_ok true}]
+        (is (= 200 (:status resp)))
+        (is (date-timestamp? (:tile_update_requested result)))
+        (is (date-timestamp? (:result_produced result)))
+        (is (results-ok? expected result))
+        (is (= (set (keys expected))
+               (set (keys result))))))
+
     (testing "reschedule algorithm when results already exist")))

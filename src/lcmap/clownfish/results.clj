@@ -1,5 +1,6 @@
 (ns lcmap.clownfish.results
   (:require [clojure.tools.logging :as log]
+            [digest]
             [lcmap.clownfish.db :as db]
             [lcmap.clownfish.algorithm :as alg]
             [lcmap.clownfish.state :refer [tile-specs]]
@@ -23,13 +24,14 @@
 
 (defn save
   "Saves algorithm results"
-  [{:keys [x y algorithm result result_md5 result_ok result_produced] :as data}]
+  [{:keys [x y algorithm inputs_md5 result result_md5 result_ok result_produced] :as data}]
   (let [[tile_x, tile_y] (snap (int x) (int y) (first tile-specs))
         change-result {:tile_x (int tile_x)
                        :tile_y (int tile_y)
                        :x (int x)
                        :y (int y)
                        :algorithm algorithm
+                       :inputs_md5 inputs_md5
                        :result result
                        :result_md5 result_md5
                        :result_ok result_ok
