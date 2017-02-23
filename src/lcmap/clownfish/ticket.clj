@@ -3,6 +3,7 @@
             [clj-time.core :as time]
             [clj-time.coerce :as tc]
             [clojure.tools.logging :as log]
+            [clojure.walk :as walk]
             [langohr.basic :as lb]
             [lcmap.clownfish.algorithm :as alg]
             [lcmap.clownfish.configuration :refer [config]]
@@ -10,6 +11,7 @@
             [lcmap.clownfish.event :refer [amqp-channel]]
             [lcmap.clownfish.state :refer [tile-specs]]
             [lcmap.commons.tile :refer [snap]]
+            [msgpack.core :as msgpack]
             [qbits.hayt :as hayt]))
 
 (defn announce
@@ -17,10 +19,10 @@
   [ticket]
   (let [exchange (get-in config [:server :exchange])
         routing "change-detection"
-        payload (json/encode ticket)]
+        payload (msgpack/pack (walk/stringify-keys ticket))]
     (log/debugf "publish '%s' ticket: %s" routing payload)
     (lb/publish amqp-channel exchange routing payload
-                {:content-type "application/json" :persistent true}))
+                {:content-type "application/x-msgpack" :persistent true}))
   ticket)
 
 (defn create

@@ -18,13 +18,11 @@ HTTP endpoint for LCMAP change detection.
     "algorithm": "pyccd-beta1",
     "x": 123,
     "y": 456,
-    "result": "{algorithm-result-structure}",
+    "result": "{msgpacked-algorithm-result-structure}",
     "result_md5": "33caa90904b2295132d105bec3135e4c",
     "result_ok": true,
     "result_produced": "2017-01-01-17:57:33Z",
     "tile_update_requested": "2017-01-01-17:57:31Z",
-    "tile_update_began": "2017-01-01-17:57:32Z",
-    "tile_update_ended": "2017-01-01-17:57:32Z",
     "inputs_url": "http://localhost:5678/landsat/tiles?x=123&y=456&acquired=2015-01-01/2017-01-01&ubid=LANDSAT_5/TM/sr_band1&ubid=LANDSAT_5/TM/sr_band2&ubid=LANDSAT_5/TM/sr_band3&ubid=LANDSAT_5/TM/sr_band4&ubid=LANDSAT_5/TM/sr_band5&ubid=LANDSAT_5/TM/sr_band7",
     "inputs_md5": "189e725f4587b679740f0f7783745056"   
    }
@@ -178,8 +176,8 @@ Workers can be tied in with LCMAP-Changes to fulfil work tickets generated when 
 Actual exchanges and queues are unimportant to this specification, as LCMAP-Changes requires those to be provided as environment variables.
 
 ### Work Tickets - Sent by LCMAP-Changes to LCMAP-Change-Worker
-##### Content-Type:  ```application/json``` 
-##### Routing-Key:   ```change-detection``` 
+##### Content-Type:  ```application/x-msgpack```
+##### Routing-Key:   ```change-detection```
 ##### Body:
 ```
 {"tile_x": Integer,
@@ -190,16 +188,16 @@ Actual exchanges and queues are unimportant to this specification, as LCMAP-Chan
  "tile_update_requested": "ISO8601 Datetime String",
  "inputs_url": "HTTP(s) url for obtaining inputs, String"}
  ```
- 
+
 ### Algorithm Results - Sent by LCMAP-Change-Worker to LCMAP-Changes
-##### Content-Type:  ```application/json``` 
-##### Routing-Key:   ```change-detection-result``` 
+##### Content-Type:  ```application/x-msgpack```
+##### Routing-Key:   ```change-detection-result```
 ##### Body:
 ```
 {"algorithm": "String",
  "x": Integer,
  "y": Integer,
- "result": "Algorithm results, String",
+ "result": "msgpack'd algorithm results",
  "result_md5": "MD5 String of the algorithm result",
  "result_ok": Boolean,
  "result_produced" "ISO8601 Datetime String"}

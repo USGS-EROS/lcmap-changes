@@ -63,7 +63,7 @@
 
 (defn handle-delivery
   [ch metadata payload]
-  (if-let [change-result (event/decode-message metadata payload)]
+  (if-let [change-result (event/unpack-message metadata payload)]
     (do
       (log/debugf "metadata: %s" metadata)
       (log/debugf "change-result: %s" change-result)
