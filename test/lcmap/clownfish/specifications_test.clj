@@ -5,17 +5,23 @@
             [clojure.java.io :as io]
             [clojure.test :refer :all]
             [clojure.tools.logging :as log]
+            [clojure.walk :as walk]
             [cheshire.core :as json]
             [langohr.basic :as lb]
+            [msgpack.core :as msgpack]
             ;; have to require server to include server state
             ;; otherwise it will never be started
             [lcmap.clownfish.configuration :refer [config]]
             [lcmap.clownfish.event :as event :refer [amqp-channel]]
             [lcmap.clownfish.server :as server]
-            [lcmap.clownfish.shared :refer [with-system req]]))
+            [lcmap.clownfish.shared :refer [with-system req]])
+  (:import [org.apache.commons.codec.binary Base64]))
+
 
 (def json-header {"Accept" "application/json"
                   "Content-Type" "application/json"})
+
+(def message-pack-header {"Content-Type" "application/x-msgpack"})
 
 ;; low level clients for resources
 (defn upsert-algorithm
@@ -114,15 +120,14 @@
        "/" (:y ticket)
        "/" timestamp-regex))
 
-(def ignored-keys [:tile_update_requested :tile_update_began :tile_update_ended
-                   :inputs_url :result_produced])
+(def ignored-keys [:tile_update_requested :inputs_url :result_produced])
 
 (defn results-ok?
   "Compares two results (or tickets) minus inputs_url, tile_update_requested and
    result_produced which are non-deterministic due to timestamp information"
   [expected actual]
-  (= (log/spy :trace (apply dissoc expected ignored-keys))
-     (log/spy :trace (apply dissoc actual ignored-keys))))
+  (= (log/spy :info (apply dissoc expected ignored-keys))
+     (log/spy :info (apply dissoc actual ignored-keys))))
 
 (defn inputs-url-ok?
   "Determine if inputs_url conforms to expected structure after having
@@ -184,8 +189,6 @@
                       :source-data-available true
                       :result nil
                       :tile_update_requested "{{now}} can't be determined"
-                      :tile_update_began nil
-                      :tile_update_ended nil
                       :result_produced nil
                       :result_md5 nil}]
         (is (= 202 (:status resp)))
@@ -195,7 +198,7 @@
 
     (testing "consume ticket from rabbitmq, send change-detection-response"
       (let [[metadata payload] (lb/get amqp-channel "unit.lcmap.changes.worker")
-            body (event/decode-message metadata payload)
+            body (event/unpack-message metadata payload)
             expected {:tile_x -585
                       :tile_y 2805
                       :algorithm "test-alg"
@@ -212,13 +215,15 @@
                     "unit.lcmap.changes.worker"
                     "change-detection-result"
                     (->> {:inputs_md5 (digest/md5 "dummy inputs")
-                          :result "some test results"
-                          :result_md5 (digest/md5 "some test results")
+                          :result (msgpack/pack "some test results")
+                          :result_md5 (digest/md5
+                                       (msgpack/pack "some test results"))
                           :result_produced (tc/to-string (time/now))
                           :result_ok true}
                          (merge body)
-                         (json/encode))
-                    {:content-type "application/json" :persistent true})
+                         (walk/stringify-keys)
+                         (msgpack/pack))
+                    {:content-type "application/x-msgpack" :persistent true})
         ;; sleep this for just a bit so the server has time to consume and
         ;; persist the message we just sent.
         (Thread/sleep 1000)))
@@ -234,12 +239,12 @@
                       :y 456
                       :refresh false
                       :tile_update_requested "{{now}} can't be determined"
-                      :tile_update_began "{{now}} can't be determined"
-                      :tile_update_ended "{{now}} can't be determined"
                       :inputs_url "{{now}} can't be determined"
                       :inputs_md5 (digest/md5 "dummy inputs")
-                      :result "some test results"
-                      :result_md5 (digest/md5 "some test results")
+                      :result (Base64/encodeBase64String
+                               (msgpack/pack "some test results"))
+                      :result_md5 (digest/md5
+                                   (msgpack/pack "some test results"))
                       :result_produced "{{now}} can't be determined"
                       :result_ok true}]
         (is (= 200 (:status resp)))
