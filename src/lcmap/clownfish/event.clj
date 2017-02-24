@@ -7,8 +7,8 @@
   and handling messages."
   (:require [camel-snake-kebab.core :refer [->snake_case_keyword]]
             [camel-snake-kebab.extras :refer [transform-keys]]
-            [cheshire.core :as json]
             [clojure.tools.logging :as log]
+            [clojure.walk :as walk]
             [dire.core :as dire]
             [langohr.core :as rmq]
             [langohr.basic :as lb]
@@ -16,17 +16,20 @@
             [langohr.exchange :as le]
             [langohr.queue :as lq]
             [lcmap.clownfish.configuration :refer [config]]
+            [msgpack.core :as msgpack]
             [mount.core :refer [args defstate stop] :as mount]))
 
-(defn decode-message
-  "Convert byte payload to JSON or nil."
+(defn unpack-message
+  "Convert byte payload clojure map or nil."
   [metadata payload]
-  (transform-keys ->snake_case_keyword (json/decode (String. payload "UTF-8"))))
+  (transform-keys
+     #(->snake_case_keyword % :separator \-)
+     (walk/keywordize-keys (msgpack/unpack payload))))
 
-(dire/with-handler! #'decode-message
+(dire/with-handler! #'unpack-message
   java.lang.Exception
   (fn [e & args]
-    (log/debugf "cannot decode message: %s"
+    (log/debugf "cannot unpack message: %s"
                 {:metadata (first args) :payload (second args) :exception e})
     nil))
 

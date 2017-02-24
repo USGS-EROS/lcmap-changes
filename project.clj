@@ -23,6 +23,8 @@
                  ;; logging
                  [org.clojure/tools.logging "0.3.1"]
                  [org.slf4j/slf4j-log4j12 "1.7.22"]
+                 ;; preferred serialization format
+                 [clojure-msgpack "1.2.0"]
                  ;; state management
                  [mount "0.1.11"]
                  ;; configuration
@@ -63,4 +65,5 @@
   :main lcmap.clownfish.core
   :target-path "target/%s/"
   :compile-path "%s/classes"
+  :jvm-opts ["-Xmx512m" "-server"]
   :repl-options {:init-ns user})

@@ -80,6 +80,7 @@
   (log/tracef "put-algorithm: %s..." algorithm)
   (let [alg-def (merge {:algorithm algorithm} body)]
     (or (some->> (validate alg-def)
+                 (str)
                  (assoc {:status 403} :body))
         (some->> (upsert alg-def)
                  (assoc {:status 202} :body)))))

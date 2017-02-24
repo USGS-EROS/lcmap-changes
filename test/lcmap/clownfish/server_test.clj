@@ -10,8 +10,8 @@
 
 (deftest changes-tests
   (with-system
-    (log/errorf "HTTP-HOST: %s" http-host)
-    (log/errorf "HTTP-PORT: %s" http-port)
+    (log/debugf "HTTP-HOST: %s" http-host)
+    (log/debugf "HTTP-PORT: %s" http-port)
     (testing "entry-point"
       (let [resp (req :get http-host)]
         (is (= 200 (:status resp)))))
