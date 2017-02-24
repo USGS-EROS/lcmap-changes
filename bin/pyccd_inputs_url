@@ -22,13 +22,13 @@ def get_tile_specs(host, port):
     return requests.get(tile_specs).json()
 
 def get_ubids(tile_specs):
-    """ Return all ubids for pyccd from named host and port """
+    """ Return all ubids from supplied tile-specs """
     return [ts['ubid'] for ts in tile_specs]
-
-# sorted(list(set(get_ubids(get_tile_specs("lcmap-test.cr.usgs.gov", "80")))))
 
 def url_template(ubids, start_date, end_date='{{now}}', host='localhost', port='80'):
     """ Returns the inputs url template to be fed into algorithms configuration """
+    # TODO: gonna have to deal with the context path being different for local vs deployed
+    #       /landsat here, probably / locally
     base = ''.join(['http://', host, ':', port,
                     '/landsat/tiles?x={{x}}&y={{y}}',
                     '&acquired=', start_date, '/', end_date])
