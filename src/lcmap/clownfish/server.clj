@@ -67,6 +67,7 @@
     (do
       (log/debugf "metadata: %s" metadata)
       (log/debugf "change-result: %s" change-result)
+      (log/debugf "change-result/result type: %s" (type (:result change-result)))
       (try
         (results/save change-result)
         (lb/ack event/amqp-channel (metadata :delivery-tag))
