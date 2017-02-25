@@ -121,6 +121,7 @@
        "/" timestamp-regex))
 
 (def ignored-keys [:tile_update_requested :inputs_url :result_produced])
+(def test-algorithm-result (json/encode {:a "some" :b "result" :c 3}))
 
 (defn results-ok?
   "Compares two results (or tickets) minus inputs_url, tile_update_requested and
@@ -215,9 +216,8 @@
                     "unit.lcmap.changes.worker"
                     "change-detection-result"
                     (->> {:inputs_md5 (digest/md5 "dummy inputs")
-                          :result (msgpack/pack "some test results")
-                          :result_md5 (digest/md5
-                                       (msgpack/pack "some test results"))
+                          :result  test-algorithm-result
+                          :result_md5 (digest/md5 (str test-algorithm-result))
                           :result_produced (tc/to-string (time/now))
                           :result_ok true}
                          (merge body)
@@ -241,10 +241,8 @@
                       :tile_update_requested "{{now}} can't be determined"
                       :inputs_url "{{now}} can't be determined"
                       :inputs_md5 (digest/md5 "dummy inputs")
-                      :result (Base64/encodeBase64String
-                               (msgpack/pack "some test results"))
-                      :result_md5 (digest/md5
-                                   (msgpack/pack "some test results"))
+                      :result test-algorithm-result
+                      :result_md5 (digest/md5 (str test-algorithm-result))
                       :result_produced "{{now}} can't be determined"
                       :result_ok true}]
         (is (= 200 (:status resp)))
