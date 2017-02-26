@@ -10,13 +10,13 @@
 
 (comment
  "In it's initial state, cassandra does not have a schema and rabbitmq does
- not have queues, bindings or exchanges. These can be created manually:
+ not have queues, bindings or exchanges. These can be created manually:"
 
- user=> (require '[lcmap.clownfish.setup.initialize :as init])
- user=> (init/cassandra environment)
- user=> (init/rabbitmq environment)
+ (require '[lcmap.clownfish.setup.initialize :as init])
+ (init/cassandra environment)
+ (init/rabbitmq environment)
 
- If run from the repl, this will create whatever cassandra schema is provided
+ "If run from the repl, this will create whatever cassandra schema is provided
  in dev/resources/cassandra.setup.cql, and whatever rabbitmq exchanges, queues
  and bindings are contained in dev/resources/rabbitmq.setup.edn.
 
@@ -39,8 +39,8 @@
  2 - Start the repl
  3 - Create an environment map configured for remote server access
  4 - (require '[lcmap.clownfish.setup.initialize :as initialize])
- 5 - (initialize/cassandra the-environment)
-")
+ 5 - (initialize/cassandra the-environment)")
+
 
 (def system-var nil)
 (def retry-strategy (again/max-retries 0 (again/constant-strategy 0)))
