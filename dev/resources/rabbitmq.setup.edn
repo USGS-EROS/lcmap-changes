@@ -8,7 +8,7 @@
               :opts {:durable true}}]
  :bindings [{:exchange "local.lcmap.changes.server"
              :queue "local.lcmap.changes.worker"
-             :opts {:routing-key "change-detection"}}
+             :opts {:routing-key "test-algorithm-1.0.0"}}
             {:exchange "local.lcmap.changes.worker"
              :queue "local.lcmap.changes.server"
-             :opts {:routing-key "change-detection-result"}}]}
+             :opts {:routing-key "test-algorithm-1.0.0"}}]}

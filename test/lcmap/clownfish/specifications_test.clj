@@ -116,6 +116,7 @@
 
 (def timestamp-regex  "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?Z")
 (def test-url-template "http://host/{{algorithm}}/{{x}}/{{y}}/{{now}}")
+(def test-algorithm "test-algorithm-1.0.0")
 
 (defn test-url-regex
   "build regex for expected url"
@@ -149,7 +150,7 @@
 (deftest results
   (with-system
     ;; put a good alg in the system
-    (upsert-algorithm http-host {:algorithm "test-alg"
+    (upsert-algorithm http-host {:algorithm test-algorithm
                                  :enabled true
                                  :inputs_url_template test-url-template})
 
@@ -160,7 +161,7 @@
         (is (= 422 (:status resp)))))
 
     (testing "schedule existing algorithm, no results exist"
-      (let [body       {:algorithm "test-alg" :x 123 :y 456 :refresh false}
+      (let [body       {:algorithm test-algorithm :x 123 :y 456 :refresh false}
             resp       (get-results http-host body)
             ticket     (json/decode (:body resp) true)
             expected   {:tile_x -585
@@ -168,7 +169,7 @@
                         :x 123
                         :y 456
                         :tile_update_requested "{{now}} can't be determined"
-                        :algorithm "test-alg"
+                        :algorithm test-algorithm
                         :inputs_url "{{now}} can't be determined"
                         :refresh false
                         :algorithm-available true
@@ -179,7 +180,7 @@
         (is (results-ok? expected ticket))))
 
     (testing "schedule same algorithm, get ticket"
-      (let [body     {:algorithm "test-alg" :x 123 :y 456 :refresh false}
+      (let [body     {:algorithm test-algorithm :x 123 :y 456 :refresh false}
             resp     (get-results http-host body)
             ticket   (json/decode (:body resp) true)
             expected {:tile_x -585
@@ -187,7 +188,7 @@
                       :x 123
                       :y 456
                       :result_ok nil
-                      :algorithm "test-alg"
+                      :algorithm test-algorithm
                       :inputs_url "{{now}} can't be determined"
                       :refresh false
                       :algorithm-available true
@@ -207,7 +208,7 @@
             body (event/unpack-message metadata payload)
             expected {:tile_x -585
                       :tile_y 2805
-                      :algorithm "test-alg"
+                      :algorithm test-algorithm
                       :x 123
                       :y 456
                       :tile_update_requested "{{now}} can't be determined"
@@ -219,7 +220,7 @@
         ;; change results should wind up in the db
         (lb/publish amqp-channel
                     "unit.lcmap.changes.worker"
-                    "change-detection-result"
+                    test-algorithm
                     (->> {:inputs_md5 (digest/md5 "dummy inputs")
                           :result  test-algorithm-result
                           :result_md5 (digest/md5 (str test-algorithm-result))
@@ -234,12 +235,12 @@
         (Thread/sleep 1000)))
 
     (testing "retrieve algorithm results once available"
-      (let [body     {:algorithm "test-alg" :x 123 :y 456 :refresh false}
+      (let [body     {:algorithm test-algorithm :x 123 :y 456 :refresh false}
             resp     (get-results http-host body)
             result   (json/decode (:body resp) true)
             expected {:tile_x -585
                       :tile_y 2805
-                      :algorithm "test-alg"
+                      :algorithm test-algorithm
                       :x 123
                       :y 456
                       :refresh false
@@ -258,10 +259,10 @@
                (set (keys result))))))
 
     (testing "reschedule algorithm when results already exist"
-      (let [resp1  (get-results http-host {:algorithm "test-alg"
+      (let [resp1  (get-results http-host {:algorithm test-algorithm
                                            :x 123 :y 456 :refresh false})
             ts1    (:tile_update_requested (json/decode (:body resp1) true))
-            resp2  (get-results http-host {:algorithm "test-alg"
+            resp2  (get-results http-host {:algorithm test-algorithm
                                            :x 123 :y 456 :refresh true})
             result (json/decode (:body resp2) true)]
         (is (= 202 (:status resp2)))

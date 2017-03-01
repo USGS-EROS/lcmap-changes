@@ -177,7 +177,7 @@ Actual exchanges and queues are unimportant to this specification, as LCMAP-Chan
 
 ### Work Tickets - Sent by LCMAP-Changes to LCMAP-Change-Worker
 ##### Content-Type:  ```application/x-msgpack```
-##### Routing-Key:   ```change-detection```
+##### Routing-Key:   ```CONFIGURED ALGORITHM NAME```
 ##### Body:
 ```
 {"tile_x": Integer,
@@ -191,7 +191,7 @@ Actual exchanges and queues are unimportant to this specification, as LCMAP-Chan
 
 ### Algorithm Results - Sent by LCMAP-Change-Worker to LCMAP-Changes
 ##### Content-Type:  ```application/x-msgpack```
-##### Routing-Key:   ```change-detection-result```
+##### Routing-Key:   ```CONFIGURED ALGORITHM NAME```
 ##### Body:
 ```
 {"algorithm": "String",
