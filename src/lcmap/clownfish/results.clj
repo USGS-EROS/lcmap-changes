@@ -46,9 +46,11 @@
 
 (defn schedule
   "Schedules algorithm execution while preventing duplicates"
-  [{:keys [x y algorithm] :as data}]
+  [{:keys [x y algorithm refresh] :as data}]
   (log/infof "scheduling: %s" data)
-  (or (retrieve data) (ticket/create data)))
+  (or (and (not refresh)
+           (retrieve data))
+      (ticket/create data)))
 
 (defn get-results
   "HTTP request handler to get algorithm results"
@@ -57,7 +59,7 @@
   (let [data    {:x (numberize x)
                  :y (numberize y)
                  :algorithm algorithm
-                 :refresh (boolean r)}
+                 :refresh (Boolean/valueOf r)}
         results (retrieve data)]
     (log/tracef "get-changes results: %s" results)
     (if (and results (not (nil? (:result results))) (not (:refresh data)))

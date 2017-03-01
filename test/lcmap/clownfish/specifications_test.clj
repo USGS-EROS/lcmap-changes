@@ -40,8 +40,13 @@
 
 (defn get-results
   "Retrieves results/tickets from lcmap-changes"
-  [http-host {:keys [algorithm x y]}]
-  (log/spy :trace (req :get (str http-host "/results/" algorithm "/" x "/" y))))
+  [http-host {:keys [algorithm x y refresh]}]
+  (log/spy :debug (req :get
+                    (str http-host
+                         "/results/" algorithm
+                         "/" x
+                         "/" y
+                         "?refresh=" (str refresh)))))
 
 ;; test code
 (deftest changes-health-resource
@@ -149,13 +154,13 @@
                                  :inputs_url_template test-url-template})
 
     (testing "schedule non-existent algorithm"
-      (let [body {:algorithm "does-not-exist" :x 123 :y 456}
+      (let [body {:algorithm "does-not-exist" :x 123 :y 456 :refresh false}
             resp (get-results http-host body)]
         ;; should return unprocessable entity, HTTP 422
         (is (= 422 (:status resp)))))
 
     (testing "schedule existing algorithm, no results exist"
-      (let [body       {:algorithm "test-alg" :x 123 :y 456}
+      (let [body       {:algorithm "test-alg" :x 123 :y 456 :refresh false}
             resp       (get-results http-host body)
             ticket     (json/decode (:body resp) true)
             expected   {:tile_x -585
@@ -174,7 +179,7 @@
         (is (results-ok? expected ticket))))
 
     (testing "schedule same algorithm, get ticket"
-      (let [body     {:algorithm "test-alg" :x 123 :y 456}
+      (let [body     {:algorithm "test-alg" :x 123 :y 456 :refresh false}
             resp     (get-results http-host body)
             ticket   (json/decode (:body resp) true)
             expected {:tile_x -585
@@ -229,7 +234,7 @@
         (Thread/sleep 1000)))
 
     (testing "retrieve algorithm results once available"
-      (let [body     {:algorithm "test-alg" :x 123 :y 456}
+      (let [body     {:algorithm "test-alg" :x 123 :y 456 :refresh false}
             resp     (get-results http-host body)
             result   (json/decode (:body resp) true)
             expected {:tile_x -585
@@ -252,4 +257,15 @@
         (is (= (set (keys expected))
                (set (keys result))))))
 
-    (testing "reschedule algorithm when results already exist")))
+    (testing "reschedule algorithm when results already exist"
+      (let [resp1  (get-results http-host {:algorithm "test-alg"
+                                           :x 123 :y 456 :refresh false})
+            ts1    (:tile_update_requested (json/decode (:body resp1) true))
+            resp2  (get-results http-host {:algorithm "test-alg"
+                                           :x 123 :y 456 :refresh true})
+            result (json/decode (:body resp2) true)]
+        (is (= 202 (:status resp2)))
+        (is (date-timestamp? ts1))
+        (is (date-timestamp? (:tile_update_requested result)))
+        (is (not (= ts1 (:tile_update_requested result))))
+        (is (:refresh result))))))
