@@ -24,7 +24,7 @@
   (log/debug "req - decoding as JSON")
   (transform-keys #(->snake_case_keyword % :separator \-)
                   (json/decode (slurp body))))
-  
+
 (defn prepare-with
   "Request transform placeholder."
   [request]

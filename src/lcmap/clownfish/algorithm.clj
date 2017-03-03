@@ -1,13 +1,13 @@
 (ns lcmap.clownfish.algorithm
-  (require [cheshire.core :as json]
-           [clj-time.core :as time]
-           [clj-time.coerce :as tc]
-           [clojure.tools.logging :as log]
-           [clojure.string :as str]
-           [clostache.parser :as template]
-           [lcmap.clownfish.db :as db]
-           [qbits.hayt :as hayt]
-           [schema.core :as sc]))
+  (:require [cheshire.core :as json]
+            [clj-time.core :as time]
+            [clj-time.coerce :as tc]
+            [clojure.tools.logging :as log]
+            [clojure.string :as str]
+            [clostache.parser :as template]
+            [lcmap.clownfish.db :as db]
+            [qbits.hayt :as hayt]
+            [schema.core :as sc]))
 
 (def schema
   {:algorithm sc/Str
@@ -53,8 +53,9 @@
 ;;; Becomes:
 ;;; http://host:5678/landsat/tiles?x=x&y=y&acquired=2015-01-01/2017-01-18&ubid="ubid1"&ubid="ubid2"
 ;;;
-(defn inputs [{:keys [x y algorithm] :as data}]
+(defn inputs
   "Construct url to retrieve tiles for algorithm input"
+  [{:keys [x y algorithm] :as data}]
   (let [conf  (configuration data)
         now   (tc/to-string (time/now))]
     (template/render (:inputs_url_template conf) (merge data {:now now}))))

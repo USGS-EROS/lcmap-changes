@@ -23,8 +23,8 @@
   "Convert byte payload clojure map or nil."
   [metadata payload]
   (transform-keys
-     #(->snake_case_keyword % :separator \-)
-     (walk/keywordize-keys (msgpack/unpack payload))))
+   #(->snake_case_keyword % :separator \-)
+   (walk/keywordize-keys (msgpack/unpack payload))))
 
 (dire/with-handler! #'unpack-message
   java.lang.Exception

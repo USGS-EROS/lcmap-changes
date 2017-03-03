@@ -17,7 +17,6 @@
             [lcmap.clownfish.shared :refer [with-system req]])
   (:import [org.apache.commons.codec.binary Base64]))
 
-
 (def json-header {"Accept" "application/json"
                   "Content-Type" "application/json"})
 
@@ -42,11 +41,11 @@
   "Retrieves results/tickets from lcmap-changes"
   [http-host {:keys [algorithm x y refresh]}]
   (log/spy :debug (req :get
-                    (str http-host
-                         "/results/" algorithm
-                         "/" x
-                         "/" y
-                         "?refresh=" (str refresh)))))
+                       (str http-host
+                            "/results/" algorithm
+                            "/" x
+                            "/" y
+                            "?refresh=" (str refresh)))))
 
 ;; test code
 (deftest changes-health-resource
@@ -71,28 +70,28 @@
         (is (coll? body))))
 
     (testing "add algorithm - bad bodies"
-        (doseq [body [{:enabled true :bad-inputs_url_template "http://host"}
-                      {:not-enabled true :inputs_url_template "http://host"}
-                      {:enabled "string" :inputs_url_template "http://host"}]]
-            (let [response (req :put (str http-host "/algorithm/bad")
-                                :body (json/encode body)
-                                :headers json-header)
-                  status (:status response)]
-                (is (= 403 status)))))
+      (doseq [body [{:enabled true :bad-inputs_url_template "http://host"}
+                    {:not-enabled true :inputs_url_template "http://host"}
+                    {:enabled "string" :inputs_url_template "http://host"}]]
+        (let [response (req :put (str http-host "/algorithm/bad")
+                            :body (json/encode body)
+                            :headers json-header)
+              status (:status response)]
+          (is (= 403 status)))))
 
     (testing "add good algorithm"
       (let [body   {:algorithm "good"
                     :enabled false
                     :inputs_url_template "http://host"}
             resp   (upsert-algorithm http-host body)]
-          (is (= 202 (:status resp)))))
+        (is (= 202 (:status resp)))))
 
     (testing "update algorithm")
     (let [body {:algorithm "good"
                 :enabled true
                 :inputs_url_template "http://anotherhost"}
           resp (upsert-algorithm http-host body)]
-        (is (= 202 (:status resp))))
+      (is (= 202 (:status resp))))
 
     (testing "get algorithm"
       (let [resp     (get-algorithm http-host "good")
@@ -107,8 +106,8 @@
             expected [{:algorithm "good"
                        :enabled true
                        :inputs_url_template "http://anotherhost"}]]
-       (is (= 200 (:status resp)))
-       (is (= (json/decode (:body resp) true) expected))))))
+        (is (= 200 (:status resp)))
+        (is (= (json/decode (:body resp) true) expected))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Test results resource ;;
