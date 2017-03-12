@@ -99,9 +99,7 @@
            (log/debug "stopping listener: %s" listener)
            (try
              (lb/cancel event/amqp-channel listener)
-             (event/destroy-queue queue)
-             (event/destroy-exchange exchange)
-             (catch Exception e 
+             (catch Exception e
                (log/warnf "Listener did not shut down cleanly: %s" e)))
            nil))
 

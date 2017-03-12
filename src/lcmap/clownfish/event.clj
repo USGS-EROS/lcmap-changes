@@ -124,5 +124,7 @@
 (defn destroy-queue
   "Removes a queue from rabbitmq"
   [name]
-  (lq/delete amqp-channel name)
+  ;;; do not delete queues that have messages in them
+  ;;; see http://reference.clojurerabbitmq.info/langohr.queue.html#var-delete
+  (lq/delete amqp-channel name false true)
   name)

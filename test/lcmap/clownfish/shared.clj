@@ -5,9 +5,11 @@
             [clojure.tools.logging :as log]
             [clojure.java.io :as io]
             [lcmap.clownfish.configuration :refer [config]]
+            [lcmap.clownfish.event :as event]
             [lcmap.clownfish.setup.initialize :as initialize]
             [lcmap.clownfish.setup.finalize :as finalize]
             [lcmap.clownfish.system :as system]
+            [mount.core :as mount]
             [org.httpkit.client :as http]))
 
 (defmacro with-system
@@ -31,6 +33,10 @@
          ~@body)
        (finally
          (log/debug "Stopping test system")
+         ;;; stop the listener then remove the rabbit items
+         (mount/stop #'lcmap.clownfish.server/listener)
+         (event/destroy-queue (get-in config [:server :queue]))
+         (event/destroy-exchange (get-in config [:server :exchange]))
          (system/stop)
          (finalize/cassandra env#)))))
 

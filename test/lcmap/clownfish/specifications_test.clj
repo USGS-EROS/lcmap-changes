@@ -139,8 +139,8 @@
   "Compares two results (or tickets) minus inputs_url, tile_update_requested and
    result_produced which are non-deterministic due to timestamp information"
   [expected actual]
-  (= (log/spy :info (apply dissoc expected ignored-keys))
-     (log/spy :info (apply dissoc actual ignored-keys))))
+  (= (log/spy :debug (apply dissoc expected ignored-keys))
+     (log/spy :debug (apply dissoc actual ignored-keys))))
 
 (defn inputs-url-ok?
   "Determine if inputs_url conforms to expected structure after having
@@ -279,5 +279,7 @@
 
     (testing "deleting exchanges and queues"
       ;;; TODO - This needs to be in a fixture teardown
+      ;;; clear the test-alg queue of any lingering messages first
+      (lb/get amqp-channel test-algorithm)
       (event/destroy-queue test-algorithm)
       (event/destroy-exchange test-algorithm))))
