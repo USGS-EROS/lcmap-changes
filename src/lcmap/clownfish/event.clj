@@ -85,8 +85,44 @@
 
 (defn configure-channel
   [channel]
-  (do
-    (lb/qos channel 1)))
+  (lb/qos channel 1))
 
 (defstate configure-amqp-channel
   :start (configure-channel amqp-channel))
+
+(defn create-exchange
+  "Creates an exchange"
+  ([name]
+   (create-exchange name "topic" {:durable true}))
+  ([name type opts]
+   (log/debugf "create-exchange: %s" name)
+   (le/declare amqp-channel name type opts)
+   {:name name :type type :opts opts}))
+
+(defn create-queue
+  "Creates a queue"
+  ([name]
+   (create-queue name {:durable true :exclusive false :auto-delete false}))
+  ([name opts]
+   (log/debugf "create-queue: %s:%s" name opts)
+   (lq/declare amqp-channel name opts)
+   {:name name :opts opts}))
+
+(defn create-binding
+  "Binds an exchange to a queue with opts"
+  [queue exchange opts]
+  (log/debugf "create-binding: %s:%s:%s" queue exchange opts)
+  (lq/bind amqp-channel queue exchange opts)
+  {:queue queue :exchange exchange :opts opts})
+
+(defn destroy-exchange
+  "Removes an exchange from rabbitmq"
+  [name]
+  (le/delete amqp-channel name)
+  name)
+
+(defn destroy-queue
+  "Removes a queue from rabbitmq"
+  [name]
+  (lq/delete amqp-channel name)
+  name)

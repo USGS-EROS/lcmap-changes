@@ -5,9 +5,13 @@
             [clojure.tools.logging :as log]
             [clojure.string :as str]
             [clostache.parser :as template]
+            [lcmap.clownfish.configuration :refer [config]]
             [lcmap.clownfish.db :as db]
+            [lcmap.clownfish.event :as event]
             [qbits.hayt :as hayt]
             [schema.core :as sc]))
+
+(defrecord AlgorithmConfig [algorithm enabled inputs_url_template])
 
 (def schema
   {:algorithm sc/Str
@@ -16,8 +20,8 @@
 
 (defn validate
   "Produce a map of errors if the algorithm is invalid, otherwise nil."
-  [algorithm-definition]
-  (sc/check schema algorithm-definition))
+  [^AlgorithmConfig Alg]
+  (sc/check schema Alg))
 
 (defn all
   "Retrieve all algorithms."
@@ -26,25 +30,48 @@
 
 (defn upsert
   "Create/Update algorithm definition"
-  [algorithm]
+  [^AlgorithmConfig Alg]
   (db/execute (hayt/insert :algorithms
-                           (hayt/values algorithm)))
-  algorithm)
+                           (hayt/values Alg)))
+  Alg)
 
-(defn configuration
+(defn get-conf
   "Retrieve algorithm configuration or nil"
-  [{:keys [algorithm]}]
-  (->> (hayt/where [[= :algorithm algorithm]])
+  [^String algorithm-name]
+  (->> (hayt/where [[= :algorithm algorithm-name]])
        (hayt/select :algorithms)
        (db/execute)
        (first)))
 
 (defn available?
   "Determine if an algorithm is defined & enabled"
-  [{:keys [algorithm] :as data}]
-  (true? (:enabled (configuration data))))
+  [algorithm]
+  (true? (:enabled (get-conf algorithm))))
 
-;;;  :tile_url can be templated using Mustache syntax >= 1.0: {{target}}
+(defn enable
+  "Enables an algorithm in the system."
+  ;;; TODO - Autodeploy mesos dockerimage, make sure dockerimage exists
+  ;;; server queue & exchange are created when the listener starts in server.clj
+  [^String algorithm]
+  (let [[queue exchange] ((juxt event/create-queue
+                                event/create-exchange) algorithm)
+        server-exchange (get-in config [:server :exchange])
+        server-queue (get-in config [:server :queue])]
+    (event/create-binding (:name queue)
+                          server-exchange
+                          {:routing-key algorithm})
+    (event/create-binding server-queue
+                          (:name exchange)
+                          {:routing-key algorithm})))
+
+(defn disable
+  "Disables an algorithm in the system"
+  [^String algorithm]
+  (->> algorithm
+       (event/destroy-exchange)
+       (event/destroy-queue)))
+
+;;;  :inputs_url_template can be templated using Mustache syntax >= 1.0: {{target}}
 ;;;
 ;;;  Example:
 ;;; "http://host:5678/landsat/tiles
@@ -56,32 +83,36 @@
 (defn inputs
   "Construct url to retrieve tiles for algorithm input"
   [{:keys [x y algorithm] :as data}]
-  (let [conf  (configuration data)
+  (let [conf  (get-conf (:algorithm data))
         now   (tc/to-string (time/now))]
     (template/render (:inputs_url_template conf) (merge data {:now now}))))
 
 (defn get-algorithms
   "Returns all algorithms defined in the system."
   []
-  (log/tracef "get-algorithms...")
+  (log/debugf "get-algorithms...")
   {:status 200 :body (all)})
 
 (defn get-algorithm
   "Returns an algorithm if defined in the system."
-  [algorithm]
-  (log/tracef "get-algorithm: %s..." algorithm)
-  (let [result (configuration {:algorithm algorithm})]
+  [^String algorithm-name]
+  (log/debugf "get-algorithm: %s..." algorithm-name)
+  (let [result (get-conf algorithm-name)]
     (if result
       {:status 200 :body result}
-      {:status 404 :body (str algorithm " not found.")})))
+      {:status 404 :body (str algorithm-name " not found.")})))
 
 (defn put-algorithm
   "Updates or creates an algorithm definition"
   [algorithm {body :body}]
-  (log/tracef "put-algorithm: %s..." algorithm)
-  (let [alg-def (merge {:algorithm algorithm} body)]
-    (or (some->> (validate alg-def)
+  (log/debugf "put-algorithm: %s..." algorithm)
+  (let [Alg (map->AlgorithmConfig (merge {:algorithm algorithm} body))]
+    (or (some->> (validate Alg)
                  (str)
                  (assoc {:status 403} :body))
-        (some->> (upsert alg-def)
+        (some->> (if (:enabled Alg)
+                   (do (enable (:algorithm Alg))
+                       (upsert Alg))
+                   (do (disable (:algorithm Alg))
+                       (upsert Alg)))
                  (assoc {:status 202} :body)))))

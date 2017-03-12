@@ -66,7 +66,7 @@
                                       :headers {"Accept" "application/json"}))
             body (json/decode (:body resp))]
         (is (= 200 (:status resp)))
-        (is (= 0 (count body)))
+        (is (zero? (count body)))
         (is (coll? body))))
 
     (testing "add algorithm - bad bodies"
@@ -107,7 +107,14 @@
                        :enabled true
                        :inputs_url_template "http://anotherhost"}]]
         (is (= 200 (:status resp)))
-        (is (= (json/decode (:body resp) true) expected))))))
+        (is (= (json/decode (:body resp) true) expected))))
+
+    (testing "disable algorithm")
+    (let [body {:algorithm "good"
+                :enabled false
+                :inputs_url_template "http://anotherhost"}
+          resp (upsert-algorithm http-host body)]
+      (is (= 202 (:status resp))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Test results resource ;;
@@ -203,7 +210,7 @@
         (is (results-ok? expected ticket))))
 
     (testing "consume ticket from rabbitmq, send change-detection-response"
-      (let [[metadata payload] (lb/get amqp-channel "unit.lcmap.changes.worker")
+      (let [[metadata payload] (lb/get amqp-channel test-algorithm)
             body (event/unpack-message metadata payload)
             expected {:tile_x -585
                       :tile_y 2805
@@ -218,7 +225,7 @@
         ;; send response to server exchange to mock up results.  The
         ;; change results should wind up in the db
         (lb/publish amqp-channel
-                    "unit.lcmap.changes.worker"
+                    test-algorithm
                     test-algorithm
                     (->> {:inputs_md5 (digest/md5 "dummy inputs")
                           :result  test-algorithm-result
@@ -268,4 +275,9 @@
         (is (date-timestamp? ts1))
         (is (date-timestamp? (:tile_update_requested result)))
         (is (not (= ts1 (:tile_update_requested result))))
-        (is (:refresh result))))))
+        (is (:refresh result))))
+
+    (testing "deleting exchanges and queues"
+      ;;; TODO - This needs to be in a fixture teardown
+      (event/destroy-queue test-algorithm)
+      (event/destroy-exchange test-algorithm))))

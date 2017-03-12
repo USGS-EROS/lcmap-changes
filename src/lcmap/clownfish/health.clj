@@ -12,7 +12,7 @@
                          (getMetrics)
                          (getOpenConnections)
                          (getValue))]
-      (if (= conn-count 0)
+      (if (zero? conn-count)
         (h/unhealthy "DB connection closed.")
         (h/healthy (format "DB connections: %s" conn-count))))))
 

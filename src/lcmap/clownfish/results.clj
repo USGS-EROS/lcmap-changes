@@ -66,7 +66,7 @@
       (do (log/infof "returning results for %s" (dissoc data :refresh))
           {:status 200 :body (merge data results)})
       (let [src?   (future (source-data-available? data))
-            alg?   (alg/available? data)
+            alg?   (alg/available? (:algorithm data))
             valid? {:algorithm-available alg? :source-data-available @src?}]
         (if (not-every? true? (vals valid?))
           {:status 422 :body (merge data valid?)}

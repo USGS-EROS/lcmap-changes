@@ -19,7 +19,6 @@
      (try
        ;; start from a clean state every time
        (initialize/cassandra env#)
-       (initialize/rabbitmq env#)
        (system/start env# strategy#)
        (catch Exception e#
          (log/errorf "Cannot start test system: %s" (stacktrace/root-cause e#))

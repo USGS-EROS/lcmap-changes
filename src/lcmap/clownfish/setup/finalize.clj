@@ -8,7 +8,6 @@
             [lcmap.clownfish.db :refer [db-cluster]]
             [lcmap.clownfish.event :as event]
             [lcmap.clownfish.setup.cassandra]
-            [lcmap.clownfish.setup.rabbitmq]
             [mount.core :as mount]))
 
 (def system-finalization nil)

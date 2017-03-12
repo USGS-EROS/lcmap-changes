@@ -3,6 +3,13 @@
 # LCMAP-Changes
 HTTP endpoint for LCMAP change detection.
 
+## Features
+* adds/enables/disables algorithms in the system
+* automatically configures rabbitmq based on algorithm name
+* listens on HTTP for algorithm result requests
+* automatically schedules results to be produced if they do not exist
+* captures and persists algorithm results from backend production
+
 ## Usage
 #### Get Change Results
 ```bash
@@ -143,7 +150,6 @@ user@machine:~/projects/lcmap/lcmap-changes$ make docker-deps-up-nodaemon
 user@machine:~/projects/lcmap/lcmap-changes$ lein repl
 user=> (require '[lcmap.clownfish.setup.initialize :as initialize])  
 user=> (initialize/cassandra environment)
-user=> (initialize/rabbitmq environment)
 user=> (start)
 ```
 
