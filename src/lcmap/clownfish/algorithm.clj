@@ -35,7 +35,7 @@
                            (hayt/values Alg)))
   Alg)
 
-(defn get-conf
+(defn query
   "Retrieve algorithm configuration or nil"
   [algorithm]
   (->> (hayt/where [[= :algorithm algorithm]])
@@ -43,10 +43,20 @@
        (db/execute)
        (first)))
 
-(defn available?
-  "Determine if an algorithm is defined & enabled"
+(defn enabled?
+  "Determine if an algorithm is enabled"
   [algorithm]
-  (true? (:enabled (get-conf algorithm))))
+  (true? (:enabled (query algorithm))))
+
+(defn disabled?
+  "Determine if an algorithm is disabled"
+  [algorithm]
+  (false? (:enabled (query algorithm))))
+
+(defn defined?
+  "Determine if an algorithm is defined"
+  [algorithm]
+  (nil? (query algorithm)))
 
 (defn enable
   "Enables an algorithm in the system."
@@ -83,7 +93,7 @@
 (defn inputs
   "Construct url to retrieve tiles for algorithm input"
   [{:keys [x y algorithm] :as data}]
-  (let [conf  (get-conf algorithm)
+  (let [conf  (query algorithm)
         now   (tc/to-string (time/now))]
     (template/render (:inputs_url_template conf) (merge data {:now now}))))
 
@@ -97,7 +107,7 @@
   "Returns an algorithm if defined in the system."
   [algorithm]
   (log/debugf "get-algorithm: %s..." algorithm)
-  (let [result (get-conf algorithm)]
+  (let [result (query algorithm)]
     (if result
       {:status 200 :body result}
       {:status 404 :body (str algorithm " not found.")})))
@@ -112,6 +122,6 @@
                  (assoc {:status 403} :body))
         (do
           (if (:enabled Alg)
-              (enable algorithm)
-              (disable algorithm))
+            (enable algorithm)
+            (disable algorithm))
           (assoc {:status 202} :body (upsert Alg))))))

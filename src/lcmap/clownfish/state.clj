@@ -15,8 +15,8 @@
 
 (defmethod retrieve :http [url]
   (:body
-    @(http/request
-       {:url url, :method :get, :headers {"Accept" "application/json"}})))
+   @(http/request
+     {:url url, :method :get, :headers {"Accept" "application/json"}})))
 
 (defmethod retrieve :local [url]
   (-> url io/resource slurp))
