@@ -37,8 +37,8 @@
 
 (defn get-conf
   "Retrieve algorithm configuration or nil"
-  [^String algorithm-name]
-  (->> (hayt/where [[= :algorithm algorithm-name]])
+  [algorithm]
+  (->> (hayt/where [[= :algorithm algorithm]])
        (hayt/select :algorithms)
        (db/execute)
        (first)))
@@ -52,7 +52,7 @@
   "Enables an algorithm in the system."
   ;;; TODO - Autodeploy mesos dockerimage, make sure dockerimage exists
   ;;; server queue & exchange are created when the listener starts in server.clj
-  [^String algorithm]
+  [algorithm]
   (let [[queue exchange] ((juxt event/create-queue
                                 event/create-exchange) algorithm)
         server-exchange (get-in config [:server :exchange])
@@ -66,7 +66,7 @@
 
 (defn disable
   "Disables an algorithm in the system"
-  [^String algorithm]
+  [algorithm]
   (->> algorithm
        (event/destroy-exchange)
        (event/destroy-queue)))
@@ -83,7 +83,7 @@
 (defn inputs
   "Construct url to retrieve tiles for algorithm input"
   [{:keys [x y algorithm] :as data}]
-  (let [conf  (get-conf (:algorithm data))
+  (let [conf  (get-conf algorithm)
         now   (tc/to-string (time/now))]
     (template/render (:inputs_url_template conf) (merge data {:now now}))))
 
@@ -95,12 +95,12 @@
 
 (defn get-algorithm
   "Returns an algorithm if defined in the system."
-  [^String algorithm-name]
-  (log/debugf "get-algorithm: %s..." algorithm-name)
-  (let [result (get-conf algorithm-name)]
+  [algorithm]
+  (log/debugf "get-algorithm: %s..." algorithm)
+  (let [result (get-conf algorithm)]
     (if result
       {:status 200 :body result}
-      {:status 404 :body (str algorithm-name " not found.")})))
+      {:status 404 :body (str algorithm " not found.")})))
 
 (defn put-algorithm
   "Updates or creates an algorithm definition"
