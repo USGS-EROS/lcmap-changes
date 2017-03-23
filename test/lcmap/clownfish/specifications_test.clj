@@ -264,6 +264,28 @@
         (is (= (set (keys expected))
                (set (keys result))))))
 
+    (testing "retrieve algorithm results for tile"
+      (let [algorithm test-algorithm
+            uri       (str http-host "/results/" algorithm "/tile")
+            params    {:x 123 :y 456}
+            resp      (req :get uri :query-params params)
+            results   (json/decode (resp :body) true)
+            expected  {:tile_x -585
+                       :tile_y 2805
+                       :algorithm test-algorithm
+                       :x 123
+                       :y 456
+                       :refresh false
+                       :tile_update_requested "{{now}} can't be determined"
+                       :inputs_url "{{now}} can't be determined"
+                       :inputs_md5 (digest/md5 "dummy inputs")
+                       :result test-algorithm-result
+                       :result_md5 (digest/md5 (str test-algorithm-result))
+                       :result_produced "{{now}} can't be determined"
+                       :result_ok true}]
+        (is (= 200 (:status resp)))
+        (is (every? (fn [actual] results-ok? expected actual) results))))
+
     (testing "reschedule algorithm when results already exist"
       (let [resp1  (get-results http-host {:algorithm test-algorithm
                                            :x 123 :y 456 :refresh false})

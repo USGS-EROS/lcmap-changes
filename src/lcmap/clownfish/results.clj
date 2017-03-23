@@ -22,6 +22,17 @@
          (db/execute)
          (first))))
 
+(defn retrieve-tile
+  "Return entire set of algorithm results containing x/y"
+  [x y algorithm]
+  (let [[tile_x, tile_y] (snap x  y (first tile-specs))]
+    (->> (hayt/where [[= :tile_x tile_x]
+                      [= :tile_y tile_y]
+                      [= :algorithm algorithm]])
+         (hayt/select :results)
+         (db/execute)
+         (into []))))
+
 (defn save
   "Saves algorithm results"
   [{:keys [x y algorithm inputs_md5 result result_md5 result_ok result_produced] :as data}]
@@ -71,3 +82,15 @@
         (if (not-every? true? (vals valid?))
           {:status 422 :body (merge data valid?)}
           {:status 202 :body (merge data valid? (schedule data))})))))
+
+(defn get-results-tile
+  "HTTP request handler; get all algorithm results for area that contains x/y"
+  [algorithm-name {{:keys [x y]} :params :as req}]
+  (log/tracef "get-results-tile: %s %s %s" algorithm-name x y)
+  ;; The handler always returns a 200, even if there are not results.
+  ;; This does not schedule processing. Also, using 404 doesn't seem
+  ;; like the way to indicate nothing is found.
+  (let [results (retrieve-tile (numberize x)
+                               (numberize y)
+                               algorithm-name)]
+    {:status 200 :body results}))
