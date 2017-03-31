@@ -18,7 +18,7 @@
   "Add ticket to queue for executing change detection."
   [ticket]
   (let [exchange (get-in config [:server :exchange])
-        routing "change-detection"
+        routing (:algorithm ticket)
         payload (msgpack/pack (walk/stringify-keys ticket))]
     (log/debugf "publish '%s' ticket: %s" routing payload)
     (lb/publish amqp-channel exchange routing payload

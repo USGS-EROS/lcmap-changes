@@ -10,7 +10,7 @@
   "Split a string on whitespace and returns a vector of the tokens or nil if
    the value was untokenizable"
   [value]
-  (vec (remove #(= 0 (count %)) (str/split value #" "))))
+  (vec (remove #(zero? (count %)) (str/split value #" "))))
 
 (with-handler! #'tokenize
   [java.lang.NullPointerException java.lang.ClassCastException]

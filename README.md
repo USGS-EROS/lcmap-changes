@@ -3,6 +3,13 @@
 # LCMAP-Changes
 HTTP endpoint for LCMAP change detection.
 
+## Features
+* adds/enables/disables algorithms in the system
+* automatically configures rabbitmq based on algorithm name
+* listens on HTTP for algorithm result requests
+* automatically schedules results to be produced if they do not exist
+* captures and persists algorithm results from backend production
+
 ## Usage
 #### Get Change Results
 ```bash
@@ -24,7 +31,7 @@ HTTP endpoint for LCMAP change detection.
     "result_produced": "2017-01-01-17:57:33Z",
     "tile_update_requested": "2017-01-01-17:57:31Z",
     "inputs_url": "http://localhost:5678/landsat/tiles?x=123&y=456&acquired=2015-01-01/2017-01-01&ubid=LANDSAT_5/TM/sr_band1&ubid=LANDSAT_5/TM/sr_band2&ubid=LANDSAT_5/TM/sr_band3&ubid=LANDSAT_5/TM/sr_band4&ubid=LANDSAT_5/TM/sr_band5&ubid=LANDSAT_5/TM/sr_band7",
-    "inputs_md5": "189e725f4587b679740f0f7783745056"   
+    "inputs_md5": "189e725f4587b679740f0f7783745056"
    }
   ```
 
@@ -37,7 +44,7 @@ HTTP endpoint for LCMAP change detection.
     "x": 123,
     "y": 456,
     "tile_update_requested": "2017-01-01-17:57:31Z",
-    "inputs_url": "http://localhost:5678/landsat/tiles?x=123&y=456&acquired=2015-01-01/2017-01-01&ubid=LANDSAT_5/TM/sr_band1&ubid=LANDSAT_5/TM/sr_band2&ubid=LANDSAT_5/TM/sr_band3&ubid=LANDSAT_5/TM/sr_band4&ubid=LANDSAT_5/TM/sr_band5&ubid=LANDSAT_5/TM/sr_band7",
+     "inputs_url": "http://localhost:5678/landsat/tiles?x=123&y=456&acquired=2015-01-01/2017-01-01&ubid=LANDSAT_5/TM/sr_band1&ubid=LANDSAT_5/TM/sr_band2&ubid=LANDSAT_5/TM/sr_band3&ubid=LANDSAT_5/TM/sr_band4&ubid=LANDSAT_5/TM/sr_band5&ubid=LANDSAT_5/TM/sr_band7",
    }
   ```
   Successive calls return HTTP 202 until a result is available.
@@ -63,6 +70,49 @@ HTTP endpoint for LCMAP change detection.
       "y": 456
   }
   ```
+
+#### Get Multiple Change Results
+
+Retrieve all available change results near a point by sending an HTTP GET request.
+
+This approach reduces the number of requests required to retrieve data for an area,
+but it does not support arbitrary extents.
+
+```bash
+
+user@machine:~$ http GET http://localhost:5778/results/pyccd-beta1/tile?x=123&y=456
+
+{
+    "algorithm": "pyccd-beta1",
+    "algorithm-available": false,
+    "refresh": false,
+    "source-data-available": true,
+    "x": 123,
+    "y": 456
+}
+```
+
+The return status is HTTP 200 with a JSON response body. One of the entries will
+correspond to the point you requested.
+
+```
+  [{  "algorithm": "pyccd-beta1",
+      "algorithm-available": false,
+      "refresh": false,
+      "source-data-available": true,
+      "x": 123,
+      "y": 456
+   },
+   { "algorithm": "pyccd-beta1",
+      "algorithm-available": false,
+      "refresh": false,
+      "source-data-available": true,
+      "x": 124,
+      "y": 456
+   },
+   ...
+   ]
+```
 
 #### List available algorithms
   ```bash
@@ -141,9 +191,8 @@ Not yet on clojars.  A Docker image is available: ```docker pull usgseros/lcmap-
 user@machine:~/projects/lcmap/lcmap-changes$ make docker-deps-up-nodaemon
 # In another tab
 user@machine:~/projects/lcmap/lcmap-changes$ lein repl
-user=> (require '[lcmap.clownfish.setup.initialize :as initialize])  
+user=> (require '[lcmap.clownfish.setup.initialize :as initialize])
 user=> (initialize/cassandra environment)
-user=> (initialize/rabbitmq environment)
 user=> (start)
 ```
 
@@ -177,7 +226,7 @@ Actual exchanges and queues are unimportant to this specification, as LCMAP-Chan
 
 ### Work Tickets - Sent by LCMAP-Changes to LCMAP-Change-Worker
 ##### Content-Type:  ```application/x-msgpack```
-##### Routing-Key:   ```change-detection```
+##### Routing-Key:   ```CONFIGURED ALGORITHM NAME```
 ##### Body:
 ```
 {"tile_x": Integer,
@@ -191,7 +240,7 @@ Actual exchanges and queues are unimportant to this specification, as LCMAP-Chan
 
 ### Algorithm Results - Sent by LCMAP-Change-Worker to LCMAP-Changes
 ##### Content-Type:  ```application/x-msgpack```
-##### Routing-Key:   ```change-detection-result```
+##### Routing-Key:   ```CONFIGURED ALGORITHM NAME```
 ##### Body:
 ```
 {"algorithm": "String",

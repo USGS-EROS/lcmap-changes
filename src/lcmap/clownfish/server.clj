@@ -67,6 +67,7 @@
     (do
       (log/debugf "metadata: %s" metadata)
       (log/debugf "change-result: %s" change-result)
+      (log/debugf "change-result/result type: %s" (type (:result change-result)))
       (try
         (results/save change-result)
         (lb/ack event/amqp-channel (metadata :delivery-tag))
@@ -86,13 +87,21 @@
 (defstate listener
   :start (let [f {:handle-delivery-fn handle-delivery
                   :handle-consume-ok-fn handle-consume}
-               queue (get-in config [:server :queue])
+               queue       (get-in config [:server :queue])
+               exchange    (get-in config [:server :exchange])
                listener-fn (lcons/create-default event/amqp-channel f)]
            (log/debugf "starting listener: %s" queue)
+           (event/create-queue queue)
+           (event/create-exchange exchange)
            (lb/consume event/amqp-channel queue listener-fn))
-  :stop  (let []
+  :stop  (let [queue (get-in config [:server :queue])
+               exchange (get-in config [:server :exchange])]
            (log/debug "stopping listener: %s" listener)
-           (lb/cancel event/amqp-channel listener)))
+           (try
+             (lb/cancel event/amqp-channel listener)
+             (catch Exception e
+               (log/warnf "Listener did not shut down cleanly: %s" e)))
+           nil))
 
 ;; Encoders; turn objects into strings suitable for JSON responses.
 (defn iso8601-encoder

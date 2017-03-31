@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS lcmap_changes_local.results(
     algorithm text,
     x int,
     y int,
-    result blob,
+    result text,
     result_md5 text,
     result_ok boolean,
     result_produced timestamp,

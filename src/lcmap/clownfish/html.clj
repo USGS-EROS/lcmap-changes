@@ -7,20 +7,6 @@
             [net.cgrand.enlive-html :as html]
             [camel-snake-kebab.core :as csk]))
 
-(defn prep-for-html
-  ""
-  [source]
-  (-> source
-      (update :progress_at str)
-      (update :progress_name str)
-      (update :progress_desc str)))
-
-(defn str-vals [kvs]
-  ""
-  (->> kvs
-       (map (fn [[k v]] [k (str v)]))
-       (into {})))
-
 ;; Used to produce navigation element, intended for use
 ;; with all templates.
 (html/defsnippet nav "public/application.html"

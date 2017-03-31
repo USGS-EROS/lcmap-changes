@@ -22,6 +22,17 @@
          (db/execute)
          (first))))
 
+(defn retrieve-tile
+  "Return entire set of algorithm results containing x/y"
+  [x y algorithm]
+  (let [[tile_x, tile_y] (snap x  y (first tile-specs))]
+    (->> (hayt/where [[= :tile_x tile_x]
+                      [= :tile_y tile_y]
+                      [= :algorithm algorithm]])
+         (hayt/select :results)
+         (db/execute)
+         (into []))))
+
 (defn save
   "Saves algorithm results"
   [{:keys [x y algorithm inputs_md5 result result_md5 result_ok result_produced] :as data}]
@@ -46,9 +57,11 @@
 
 (defn schedule
   "Schedules algorithm execution while preventing duplicates"
-  [{:keys [x y algorithm] :as data}]
+  [{:keys [x y algorithm refresh] :as data}]
   (log/infof "scheduling: %s" data)
-  (or (retrieve data) (ticket/create data)))
+  (or (and (not refresh)
+           (retrieve data))
+      (ticket/create data)))
 
 (defn get-results
   "HTTP request handler to get algorithm results"
@@ -57,15 +70,27 @@
   (let [data    {:x (numberize x)
                  :y (numberize y)
                  :algorithm algorithm
-                 :refresh (boolean r)}
+                 :refresh (Boolean/valueOf r)}
         results (retrieve data)]
     (log/tracef "get-changes results: %s" results)
     (if (and results (not (nil? (:result results))) (not (:refresh data)))
       (do (log/infof "returning results for %s" (dissoc data :refresh))
           {:status 200 :body (merge data results)})
       (let [src?   (future (source-data-available? data))
-            alg?   (alg/available? data)
+            alg?   (alg/enabled? (:algorithm data))
             valid? {:algorithm-available alg? :source-data-available @src?}]
         (if (not-every? true? (vals valid?))
           {:status 422 :body (merge data valid?)}
           {:status 202 :body (merge data valid? (schedule data))})))))
+
+(defn get-results-tile
+  "HTTP request handler; get all algorithm results for area that contains x/y"
+  [algorithm-name {{:keys [x y]} :params :as req}]
+  (log/tracef "get-results-tile: %s %s %s" algorithm-name x y)
+  ;; The handler always returns a 200, even if there are not results.
+  ;; This does not schedule processing. Also, using 404 doesn't seem
+  ;; like the way to indicate nothing is found.
+  (let [results (retrieve-tile (numberize x)
+                               (numberize y)
+                               algorithm-name)]
+    {:status 200 :body results}))

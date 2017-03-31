@@ -4,7 +4,6 @@
             ;; requiring this ensures the server component will start
             [lcmap.clownfish.server :as server]
             [lcmap.clownfish.setup.cassandra]
-            [lcmap.clownfish.setup.rabbitmq]
             [mount.core :refer [defstate] :as mount]))
 
 (defstate hook
@@ -29,7 +28,9 @@
          ;; started
          (mount/start-without #'lcmap.clownfish.setup.cassandra/setup
                               #'lcmap.clownfish.setup.cassandra/teardown
-                              #'lcmap.clownfish.setup.rabbitmq/setup
                               (mount/with-args {:environment environment}))))))
 (defn stop []
-  (mount/stop))
+  (try
+    (mount/stop)
+    (catch Exception ex
+      (log/warnf "System did not shutdown cleanly: %s"  ex))))

@@ -24,7 +24,7 @@
   (log/debug "req - decoding as JSON")
   (transform-keys #(->snake_case_keyword % :separator \-)
                   (json/decode (slurp body))))
-  
+
 (defn prepare-with
   "Request transform placeholder."
   [request]
@@ -96,6 +96,11 @@
      (GET "/results/:algorithm{.+}/:x{[0-9-]+}/:y{[0-9-]+}" [algorithm x y]
        (with-meta
          (results/get-results algorithm x y request)
-         {:template html/default})))
+         {:template html/default}))
+
+     (GET "/results/:algorithm/tile" [algorithm]
+          (with-meta
+            (results/get-results-tile algorithm request)
+            {:template html/default})))
 
    prepare-with respond-with))
