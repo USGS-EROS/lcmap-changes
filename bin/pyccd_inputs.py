@@ -14,9 +14,11 @@ logger = logging.getLogger(__name__)
 
 def get_tile_specs(host, port):
     """ Returns all tile specs from the named host and port for pyccd"""
-    query = ''.join(['((red OR blue OR green OR swir1 OR swir2 OR nir) AND sr)', ' ',
+    query = ''.join(['(((red OR blue OR green OR swir1 OR swir2 OR nir) AND sr)', ' ',
                       'OR (toa AND thermal AND NOT tirs2)', ' ',
-                      'OR (cfmask AND NOT conf)'])
+                      'OR (cfmask AND NOT conf))', ' ',
+                      #'AND NOT LANDSAT_8'])
+                      ])
     tile_specs=''.join(['http://', host, ':', port, '/landsat/tile-specs?q=', query])
     logger.debug("tile_specs url: {}".format(tile_specs))
     return requests.get(tile_specs).json()
