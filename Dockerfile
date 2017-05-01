@@ -9,4 +9,4 @@ WORKDIR /app
 COPY target/uberjar/$jarfile $jarfile
 COPY resources/log4j.properties log4j.properties
 
-ENTRYPOINT ["java", "-jar", "lcmap-changes-0.1.0-SNAPSHOT-standalone.jar"]
+ENTRYPOINT ["java", "-jar", "lcmap-changes-1.0.0-SNAPSHOT-standalone.jar"]
