@@ -27,7 +27,7 @@
                       :credentials {:user (:db-user env)
                                     :password (:db-pass env)}}}
    :server {:exchange (:exchange env) :queue (:queue env)}
-   :tile-specs-url (:tile-specs-url env)})
+   :chip-specs-url (:chip-specs-url env)})
 
 (defstate config
   :start (log/spy :debug (config-map ((mount/args) :environment))))

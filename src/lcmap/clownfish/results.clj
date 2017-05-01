@@ -3,18 +3,18 @@
             [digest]
             [lcmap.clownfish.db :as db]
             [lcmap.clownfish.algorithm :as alg]
-            [lcmap.clownfish.state :refer [tile-specs]]
+            [lcmap.clownfish.state :refer [chip-specs]]
             [lcmap.clownfish.ticket :as ticket]
             [lcmap.commons.numbers :refer [numberize]]
-            [lcmap.commons.tile :refer [snap]]
+            [lcmap.commons.chip :refer [snap]]
             [qbits.hayt :as hayt]))
 
 (defn retrieve
   "Returns change results or nil"
   [{:keys [x y algorithm] :as data}]
-  (let [[tile_x, tile_y] (snap x y (first tile-specs))]
-    (->> (hayt/where [[= :tile_x tile_x]
-                      [= :tile_y tile_y]
+  (let [[chip_x, chip_y] (snap x y (first chip-specs))]
+    (->> (hayt/where [[= :chip_x chip_x]
+                      [= :chip_y chip_y]
                       [= :algorithm algorithm]
                       [= :x x]
                       [= :y y]])
@@ -22,12 +22,12 @@
          (db/execute)
          (first))))
 
-(defn retrieve-tile
+(defn retrieve-chip
   "Return entire set of algorithm results containing x/y"
   [x y algorithm]
-  (let [[tile_x, tile_y] (snap x  y (first tile-specs))]
-    (->> (hayt/where [[= :tile_x tile_x]
-                      [= :tile_y tile_y]
+  (let [[chip_x, chip_y] (snap x  y (first chip-specs))]
+    (->> (hayt/where [[= :chip_x chip_x]
+                      [= :chip_y chip_y]
                       [= :algorithm algorithm]])
          (hayt/select :results)
          (db/execute)
@@ -36,9 +36,9 @@
 (defn save
   "Saves algorithm results"
   [{:keys [x y algorithm inputs_md5 result result_md5 result_ok result_produced] :as data}]
-  (let [[tile_x, tile_y] (snap (int x) (int y) (first tile-specs))
-        change-result {:tile_x (int tile_x)
-                       :tile_y (int tile_y)
+  (let [[chip_x, chip_y] (snap (int x) (int y) (first chip-specs))
+        change-result {:chip_x (int chip_x)
+                       :chip_y (int chip_y)
                        :x (int x)
                        :y (int y)
                        :algorithm algorithm
@@ -83,14 +83,14 @@
           {:status 422 :body (merge data valid?)}
           {:status 202 :body (merge data valid? (schedule data))})))))
 
-(defn get-results-tile
+(defn get-results-chip
   "HTTP request handler; get all algorithm results for area that contains x/y"
   [algorithm-name {{:keys [x y]} :params :as req}]
-  (log/tracef "get-results-tile: %s %s %s" algorithm-name x y)
+  (log/tracef "get-results-chip: %s %s %s" algorithm-name x y)
   ;; The handler always returns a 200, even if there are not results.
   ;; This does not schedule processing. Also, using 404 doesn't seem
   ;; like the way to indicate nothing is found.
-  (let [results (retrieve-tile (numberize x)
+  (let [results (retrieve-chip (numberize x)
                                (numberize y)
                                algorithm-name)]
     {:status 200 :body results}))
