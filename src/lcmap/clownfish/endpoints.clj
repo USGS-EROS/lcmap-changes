@@ -98,9 +98,9 @@
          (results/get-results algorithm x y request)
          {:template html/default}))
 
-     (GET "/results/:algorithm/tile" [algorithm]
+     (GET "/results/:algorithm/chip" [algorithm]
           (with-meta
-            (results/get-results-tile algorithm request)
+            (results/get-results-chip algorithm request)
             {:template html/default})))
 
    prepare-with respond-with))

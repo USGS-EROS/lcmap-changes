@@ -1,4 +1,4 @@
-(defproject lcmap-changes "0.1.0-SNAPSHOT"
+(defproject lcmap-changes "1.0.0-SNAPSHOT"
   :description "Change detection HTTP resource for LCMAP"
   :url "http://github.com/usgs-eros/lcmap-changes"
   :license {:name "Unlicense"

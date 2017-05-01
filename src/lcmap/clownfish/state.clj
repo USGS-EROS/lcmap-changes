@@ -21,12 +21,12 @@
 (defmethod retrieve :local [url]
   (-> url io/resource slurp))
 
-(defstate tile-specs
-  ;:start {:tile_x 10 :tile_y 10 :shift_x 0 :shift_y 0})
-  :start (let [url (:tile-specs-url config)]
-           (log/debugf "Loading tile-specs from: %s" url)
+(defstate chip-specs
+  ;:start {:chip_x 10 :chip_y 10 :shift_x 0 :shift_y 0})
+  :start (let [url (:chip-specs-url config)]
+           (log/debugf "Loading chip-specs from: %s" url)
            (try
              (-> url retrieve (json/decode true))
              (catch Exception e
-               (log/errorf e "Could not load tile-specs from: %s" url)
+               (log/errorf e "Could not load chip-specs from: %s" url)
                (throw e)))))

@@ -9,4 +9,4 @@ export CLOWNFISH_QUEUE="local.lcmap.changes.server"
 export CLOWNFISH_HTTP_PORT=5778
 export CLOWNFISH_RABBIT_HOST="localhost"
 export CLOWNFISH_RABBIT_PORT=5672
-export CLOWNFISH_TILE_SPECS_URL="tile-specs.json"
+export CLOWNFISH_CHIP_SPECS_URL="chip-specs.json"

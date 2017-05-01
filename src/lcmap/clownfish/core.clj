@@ -19,7 +19,7 @@
    :db-pass        (System/getenv "CLOWNFISH_DB_PASSWORD")
    :exchange       (System/getenv "CLOWNFISH_EXCHANGE")
    :queue          (System/getenv "CLOWNFISH_QUEUE")
-   :tile-specs-url (System/getenv "CLOWNFISH_TILE_SPECS_URL")})
+   :chip-specs-url (System/getenv "CLOWNFISH_CHIP_SPECS_URL")})
 
 (defn -main
   "Start the server"
