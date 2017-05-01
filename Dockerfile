@@ -1,7 +1,7 @@
 FROM usgseros/ubuntu-gis-clj
 MAINTAINER USGS LCMAP http://eros.usgs.gov
 
-ENV version 0.1.0-SNAPSHOT
+ENV version 1.0.0-SNAPSHOT
 ENV jarfile lcmap-changes-$version-standalone.jar
 
 RUN mkdir /app
