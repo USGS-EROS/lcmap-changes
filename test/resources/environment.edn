@@ -7,4 +7,4 @@
  :db-pass        "guest"
  :exchange       "unit.lcmap.changes.server"
  :queue          "unit.lcmap.changes.server"
- :tile-specs-url "tile-specs.json"}
+ :chip-specs-url "chip-specs.json"}

@@ -20,8 +20,8 @@ HTTP endpoint for LCMAP change detection.
   If there are results available the return status is HTTP 200 with the following response body:
   ```json
   {
-    "tile_x": 32,
-    "tile_y": 128,
+    "chip_x": 32,
+    "chip_y": 128,
     "algorithm": "pyccd-beta1",
     "x": 123,
     "y": 456,
@@ -29,8 +29,8 @@ HTTP endpoint for LCMAP change detection.
     "result_md5": "33caa90904b2295132d105bec3135e4c",
     "result_ok": true,
     "result_produced": "2017-01-01-17:57:33Z",
-    "tile_update_requested": "2017-01-01-17:57:31Z",
-    "inputs_url": "http://localhost:5678/landsat/tiles?x=123&y=456&acquired=2015-01-01/2017-01-01&ubid=LANDSAT_5/TM/sr_band1&ubid=LANDSAT_5/TM/sr_band2&ubid=LANDSAT_5/TM/sr_band3&ubid=LANDSAT_5/TM/sr_band4&ubid=LANDSAT_5/TM/sr_band5&ubid=LANDSAT_5/TM/sr_band7",
+    "chip_update_requested": "2017-01-01-17:57:31Z",
+    "inputs_url": "http://localhost:5678/landsat/chips?x=123&y=456&acquired=2015-01-01/2017-01-01&ubid=LANDSAT_5/TM/sr_band1&ubid=LANDSAT_5/TM/sr_band2&ubid=LANDSAT_5/TM/sr_band3&ubid=LANDSAT_5/TM/sr_band4&ubid=LANDSAT_5/TM/sr_band5&ubid=LANDSAT_5/TM/sr_band7",
     "inputs_md5": "189e725f4587b679740f0f7783745056"
    }
   ```
@@ -38,18 +38,18 @@ HTTP endpoint for LCMAP change detection.
   If no results are available production is automatically scheduled and HTTP 202 is returned along with a minimal body.
    ```json
   {
-    "tile_x": 32,
-    "tile_y": 128,
+    "chip_x": 32,
+    "chip_y": 128,
     "algorithm": "pyccd-beta1",
     "x": 123,
     "y": 456,
-    "tile_update_requested": "2017-01-01-17:57:31Z",
-     "inputs_url": "http://localhost:5678/landsat/tiles?x=123&y=456&acquired=2015-01-01/2017-01-01&ubid=LANDSAT_5/TM/sr_band1&ubid=LANDSAT_5/TM/sr_band2&ubid=LANDSAT_5/TM/sr_band3&ubid=LANDSAT_5/TM/sr_band4&ubid=LANDSAT_5/TM/sr_band5&ubid=LANDSAT_5/TM/sr_band7",
+    "chip_update_requested": "2017-01-01-17:57:31Z",
+     "inputs_url": "http://localhost:5678/landsat/chips?x=123&y=456&acquired=2015-01-01/2017-01-01&ubid=LANDSAT_5/TM/sr_band1&ubid=LANDSAT_5/TM/sr_band2&ubid=LANDSAT_5/TM/sr_band3&ubid=LANDSAT_5/TM/sr_band4&ubid=LANDSAT_5/TM/sr_band5&ubid=LANDSAT_5/TM/sr_band7",
    }
   ```
   Successive calls return HTTP 202 until a result is available.
 
-  Production may be rescheduled by specifying ```?refresh=true``` on the querystring.  Existing change results will be replaced once tile updates complete.
+  Production may be rescheduled by specifying ```?refresh=true``` on the querystring.  Existing change results will be replaced once chip updates complete.
 
   If the request could not be fulfilled, HTTP 422 is returned with an explanation.
   ```bash
@@ -80,7 +80,7 @@ but it does not support arbitrary extents.
 
 ```bash
 
-user@machine:~$ http GET http://localhost:5778/results/pyccd-beta1/tile?x=123&y=456
+user@machine:~$ http GET http://localhost:5778/results/pyccd-beta1/chip?x=123&y=456
 
 {
     "algorithm": "pyccd-beta1",
@@ -129,7 +129,7 @@ Server: Jetty(9.2.10.v20150310)
     {
         "algorithm": "pyccd-beta1",
         "enabled": true,
-        "inputs_url_template": "http://localhost:5678/landsat/tiles?x={{x}}&y={{y}}&acquired=2012-01-03-17:33:10Z/{{now}}&ubid=LANDSAT_5/TM/sr_band1&ubid=LANDSAT_5/TM/sr_band2"
+        "inputs_url_template": "http://localhost:5678/landsat/chips?x={{x}}&y={{y}}&acquired=2012-01-03-17:33:10Z/{{now}}&ubid=LANDSAT_5/TM/sr_band1&ubid=LANDSAT_5/TM/sr_band2"
     }
 ]
   ```
@@ -146,7 +146,7 @@ Server: Jetty(9.2.10.v20150310)
 {
     "algorithm": "pyccd-beta1",
     "enabled": true,
-    "inputs_url_template": "http://localhost:5678/landsat/tiles?x={{x}}&y={{y}}&acquired=2012-01-03-17:33:10Z/{{now}}&ubid=LANDSAT_5/TM/sr_band1&ubid=LANDSAT_5/TM/sr_band2"
+    "inputs_url_template": "http://localhost:5678/landsat/chips?x={{x}}&y={{y}}&acquired=2012-01-03-17:33:10Z/{{now}}&ubid=LANDSAT_5/TM/sr_band1&ubid=LANDSAT_5/TM/sr_band2"
 }
 ```
 
@@ -156,7 +156,7 @@ Server: Jetty(9.2.10.v20150310)
   # {
   #   "enabled": true|false,
   #   "ubid_query":"ElasticSearch syntax query for ubid tags",
-  #   "tiles_url":"url to retrieve inputs, either file or network.  Mustache syntax accepted"
+  #   "chips_url":"url to retrieve inputs, either file or network.  Mustache syntax accepted"
   # }
   #
   # Several mustache template variables are available.  They are:
@@ -167,7 +167,7 @@ Server: Jetty(9.2.10.v20150310)
   #
 
   user@machine:~$ http PUT http://localhost:5778/algorithm/pyccd-beta1
-                       enabled:=true  inputs_url_template='http://localhost:5678/landsat/tiles?x={{x}}&y={{y}}&acquired=2012-01-03-17:33:10/{{now}}&ubid=LANDSAT_5/TM/sr_band1&ubid=LANDSAT_5/TM/sr_band2'
+                       enabled:=true  inputs_url_template='http://localhost:5678/landsat/chips?x={{x}}&y={{y}}&acquired=2012-01-03-17:33:10/{{now}}&ubid=LANDSAT_5/TM/sr_band1&ubid=LANDSAT_5/TM/sr_band2'
 
   Content-Length: 210
   Content-Type: application/json
@@ -177,7 +177,7 @@ Server: Jetty(9.2.10.v20150310)
   {
       "algorithm": "pyccd-beta1",
       "enabled": true,
-      "inputs_url_template": "http://localhost:5678/landsat/tiles?x={{x}}&y={{y}}&acquired=2012-01-03-17:33:10Z/{{now}}&ubid=LANDSAT_5/TM/sr_band1&ubid=LANDSAT_5/TM/sr_band2"
+      "inputs_url_template": "http://localhost:5678/landsat/chips?x={{x}}&y={{y}}&acquired=2012-01-03-17:33:10Z/{{now}}&ubid=LANDSAT_5/TM/sr_band1&ubid=LANDSAT_5/TM/sr_band2"
   }
   ```
 
@@ -217,7 +217,7 @@ environment is internally defined in those cases.
 | `CLOWNFISH_DB_PASSWORD` | Cassandra password |
 | `CLOWNFISH_EXCHANGE` | Exchange for LCMAP-Changes to publish messages |
 | `CLOWNFISH_QUEUE` | Queue for LCMAP-Changes to listen for messages |
-| `CLOWNFISH_TILE_SPECS_URL` | URL where all tile specs can be loaded from. |
+| `CLOWNFISH_CHIP_SPECS_URL` | URL where all chip specs can be loaded from. |
 
 ## Integrating With
 Workers can be tied in with LCMAP-Changes to fulfil work tickets generated when an algorithm result has not yet been executed and stored.  An AMQP broker with persistent messaging is used to achieve loose coupling and reliable communication between the LCMAP-Changes server and workers.
@@ -229,12 +229,12 @@ Actual exchanges and queues are unimportant to this specification, as LCMAP-Chan
 ##### Routing-Key:   ```CONFIGURED ALGORITHM NAME```
 ##### Body:
 ```
-{"tile_x": Integer,
- "tile_y": Integer,
+{"chip_x": Integer,
+ "chip_y": Integer,
  "algorithm": "String",
  "x": Integer,
  "y": Integer,
- "tile_update_requested": "ISO8601 Datetime String",
+ "chip_update_requested": "ISO8601 Datetime String",
  "inputs_url": "HTTP(s) url for obtaining inputs, String"}
  ```
 

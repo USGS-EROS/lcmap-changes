@@ -132,11 +132,11 @@
        "/" (:y ticket)
        "/" timestamp-regex))
 
-(def ignored-keys [:tile_update_requested :inputs_url :result_produced])
+(def ignored-keys [:chip_update_requested :inputs_url :result_produced])
 (def test-algorithm-result (json/encode {:a "some" :b "result" :c 3}))
 
 (defn results-ok?
-  "Compares two results (or tickets) minus inputs_url, tile_update_requested and
+  "Compares two results (or tickets) minus inputs_url, chip_update_requested and
    result_produced which are non-deterministic due to timestamp information"
   [expected actual]
   (= (log/spy :debug (apply dissoc expected ignored-keys))
@@ -170,18 +170,18 @@
       (let [body       {:algorithm test-algorithm :x 123 :y 456 :refresh false}
             resp       (get-results http-host body)
             ticket     (json/decode (:body resp) true)
-            expected   {:tile_x -585
-                        :tile_y 2805
+            expected   {:chip_x -585
+                        :chip_y 2805
                         :x 123
                         :y 456
-                        :tile_update_requested "{{now}} can't be determined"
+                        :chip_update_requested "{{now}} can't be determined"
                         :algorithm test-algorithm
                         :inputs_url "{{now}} can't be determined"
                         :refresh false
                         :algorithm-available true
                         :source-data-available true}]
         (is (= 202 (:status resp)))
-        (is (date-timestamp? (:tile_update_requested ticket)))
+        (is (date-timestamp? (:chip_update_requested ticket)))
         (is (inputs-url-ok? ticket))
         (is (results-ok? expected ticket))))
 
@@ -189,8 +189,8 @@
       (let [body     {:algorithm test-algorithm :x 123 :y 456 :refresh false}
             resp     (get-results http-host body)
             ticket   (json/decode (:body resp) true)
-            expected {:tile_x -585
-                      :tile_y 2805
+            expected {:chip_x -585
+                      :chip_y 2805
                       :x 123
                       :y 456
                       :result_ok nil
@@ -201,25 +201,25 @@
                       :inputs_md5 nil
                       :source-data-available true
                       :result nil
-                      :tile_update_requested "{{now}} can't be determined"
+                      :chip_update_requested "{{now}} can't be determined"
                       :result_produced nil
                       :result_md5 nil}]
         (is (= 202 (:status resp)))
-        (is (date-timestamp? (:tile_update_requested ticket)))
+        (is (date-timestamp? (:chip_update_requested ticket)))
         (is (inputs-url-ok? ticket))
         (is (results-ok? expected ticket))))
 
     (testing "consume ticket from rabbitmq, send change-detection-response"
       (let [[metadata payload] (lb/get amqp-channel test-algorithm)
             body (event/unpack-message metadata payload)
-            expected {:tile_x -585
-                      :tile_y 2805
+            expected {:chip_x -585
+                      :chip_y 2805
                       :algorithm test-algorithm
                       :x 123
                       :y 456
-                      :tile_update_requested "{{now}} can't be determined"
+                      :chip_update_requested "{{now}} can't be determined"
                       :inputs_url "{{now}} can't be determined"}]
-        (is (date-timestamp? (:tile_update_requested body)))
+        (is (date-timestamp? (:chip_update_requested body)))
         (is (inputs-url-ok? body))
         (is (results-ok? expected body))
         ;; send response to server exchange to mock up results.  The
@@ -244,13 +244,13 @@
       (let [body     {:algorithm test-algorithm :x 123 :y 456 :refresh false}
             resp     (get-results http-host body)
             result   (json/decode (:body resp) true)
-            expected {:tile_x -585
-                      :tile_y 2805
+            expected {:chip_x -585
+                      :chip_y 2805
                       :algorithm test-algorithm
                       :x 123
                       :y 456
                       :refresh false
-                      :tile_update_requested "{{now}} can't be determined"
+                      :chip_update_requested "{{now}} can't be determined"
                       :inputs_url "{{now}} can't be determined"
                       :inputs_md5 (digest/md5 "dummy inputs")
                       :result test-algorithm-result
@@ -258,25 +258,25 @@
                       :result_produced "{{now}} can't be determined"
                       :result_ok true}]
         (is (= 200 (:status resp)))
-        (is (date-timestamp? (:tile_update_requested result)))
+        (is (date-timestamp? (:chip_update_requested result)))
         (is (date-timestamp? (:result_produced result)))
         (is (results-ok? expected result))
         (is (= (set (keys expected))
                (set (keys result))))))
 
-    (testing "retrieve algorithm results for tile"
+    (testing "retrieve algorithm results for chip"
       (let [algorithm test-algorithm
-            uri       (str http-host "/results/" algorithm "/tile")
+            uri       (str http-host "/results/" algorithm "/chip")
             params    {:x 123 :y 456}
             resp      (req :get uri :query-params params)
             results   (json/decode (resp :body) true)
-            expected  {:tile_x -585
-                       :tile_y 2805
+            expected  {:chip_x -585
+                       :chip_y 2805
                        :algorithm test-algorithm
                        :x 123
                        :y 456
                        :refresh false
-                       :tile_update_requested "{{now}} can't be determined"
+                       :chip_update_requested "{{now}} can't be determined"
                        :inputs_url "{{now}} can't be determined"
                        :inputs_md5 (digest/md5 "dummy inputs")
                        :result test-algorithm-result
@@ -289,14 +289,14 @@
     (testing "reschedule algorithm when results already exist"
       (let [resp1  (get-results http-host {:algorithm test-algorithm
                                            :x 123 :y 456 :refresh false})
-            ts1    (:tile_update_requested (json/decode (:body resp1) true))
+            ts1    (:chip_update_requested (json/decode (:body resp1) true))
             resp2  (get-results http-host {:algorithm test-algorithm
                                            :x 123 :y 456 :refresh true})
             result (json/decode (:body resp2) true)]
         (is (= 202 (:status resp2)))
         (is (date-timestamp? ts1))
-        (is (date-timestamp? (:tile_update_requested result)))
-        (is (not (= ts1 (:tile_update_requested result))))
+        (is (date-timestamp? (:chip_update_requested result)))
+        (is (not (= ts1 (:chip_update_requested result))))
         (is (:refresh result))))
 
     (testing "deleting exchanges and queues"

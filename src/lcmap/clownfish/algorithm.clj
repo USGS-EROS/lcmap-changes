@@ -84,14 +84,14 @@
 ;;;  :inputs_url_template can be templated using Mustache syntax >= 1.0: {{target}}
 ;;;
 ;;;  Example:
-;;; "http://host:5678/landsat/tiles
+;;; "http://host:5678/landsat/chips
 ;;; ?x={{x}}&y={{y}}&acquired=2015-01-01/{{now}}&ubid="ubid1"&ubid="ubid2"
 ;;;
 ;;; Becomes:
-;;; http://host:5678/landsat/tiles?x=x&y=y&acquired=2015-01-01/2017-01-18&ubid="ubid1"&ubid="ubid2"
+;;; http://host:5678/landsat/chips?x=x&y=y&acquired=2015-01-01/2017-01-18&ubid="ubid1"&ubid="ubid2"
 ;;;
 (defn inputs
-  "Construct url to retrieve tiles for algorithm input"
+  "Construct url to retrieve chips for algorithm input"
   [{:keys [x y algorithm] :as data}]
   (let [conf  (query algorithm)
         now   (tc/to-string (time/now))]
