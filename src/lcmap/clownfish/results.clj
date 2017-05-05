@@ -112,7 +112,4 @@
   ;; The handler always returns a 200, even if there are not results.
   ;; This does not schedule processing. Also, using 404 doesn't seem
   ;; like the way to indicate nothing is found.
-  (let [results (stream-chip (numberize x)
-                             (numberize y)
-                             algorithm-name)]
-    {:status 200 :body results}))
+  {:status 200 :body (stream-chip (numberize x) (numberize y) algorithm-name)})
