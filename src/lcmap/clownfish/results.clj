@@ -22,6 +22,16 @@
          (db/execute)
          (first))))
 
+(defn stream-chip
+ "Query for chip's worth of algorithm results and return stream"
+ [x y algorithm]
+ (let [[chip_x, chip_y] (snap x  y (first chip-specs))]
+   (->> (hayt/where [[= :chip_x chip_x]
+                     [= :chip_y chip_y]
+                     [= :algorithm algorithm]])
+        (hayt/select :results)
+        (db/execute))))
+
 (defn retrieve-chip
   "Return entire set of algorithm results containing x/y"
   [x y algorithm]
@@ -93,4 +103,16 @@
   (let [results (retrieve-chip (numberize x)
                                (numberize y)
                                algorithm-name)]
+    {:status 200 :body results}))
+
+(defn stream-results-chip
+  "Streams chip over HTTP"
+  [algorithm-name {{:keys [x y]} :params :as req}]
+  (log/tracef "get-results-chip: %s %s %s" algorithm-name x y)
+  ;; The handler always returns a 200, even if there are not results.
+  ;; This does not schedule processing. Also, using 404 doesn't seem
+  ;; like the way to indicate nothing is found.
+  (let [results (stream-chip (numberize x)
+                             (numberize y)
+                             algorithm-name)]
     {:status 200 :body results}))
