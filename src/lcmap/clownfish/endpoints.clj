@@ -2,6 +2,7 @@
   (:require [camel-snake-kebab.core :refer [->snake_case_keyword]]
             [camel-snake-kebab.extras :refer [transform-keys]]
             [cheshire.core :as json]
+            [clojure.java.io :as java-io]
             [clojure.tools.logging :as log]
             [clojure.string :as str]
             [compojure.core :refer :all]
@@ -10,7 +11,8 @@
             [lcmap.clownfish.health :as health]
             [lcmap.clownfish.html :as html]
             [lcmap.clownfish.middleware :refer [wrap-handler]]
-            [ring.util.accept :refer [accept]]))
+            [ring.util.accept :refer [accept]]
+            [ring.util.io :as ring-io]))
 
 (defn allow [& verbs]
   (log/debug "explaining allow verbs")
@@ -48,6 +50,13 @@
   (-> response
       (update :body json/encode)
       (assoc-in [:headers "Content-Type"] "application/json")))
+
+(defn streamer
+  """ JSON encodes a collection of items into an input stream  """
+  [coll]
+  (ring-io/piped-input-stream
+   (fn [input-stream]
+     (json/generate-stream coll (java-io/make-writer input-stream {})))))
 
 (def supported-types (accept :default to-json
                              "application/json" to-json
@@ -103,4 +112,10 @@
             (results/get-results-chip algorithm request)
             {:template html/default})))
 
-   prepare-with respond-with))
+   prepare-with respond-with)
+
+ (context "/" request
+   (GET "/results/:algorithm/chip/stream" [algorithm]
+     (with-meta
+       (streamer (results/stream-results-chip algorithm request))
+       {:template html/default}))))
