@@ -25,7 +25,8 @@
    :db     {:keyspace (:db-keyspace env)
             :cluster {:contact-points (tokenize (:db-url env))
                       :credentials {:user (:db-user env)
-                                    :password (:db-pass env)}}}
+                                    :password (:db-pass env)}
+                      :query-options {:consistency :quorum}}}
    :server {:exchange (:exchange env) :queue (:queue env)}
    :chip-specs-url (:chip-specs-url env)})
 
